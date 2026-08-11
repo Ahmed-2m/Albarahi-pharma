@@ -1,0 +1,343 @@
+'use client';
+
+import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+export default function ServicesPage() {
+  const [siteData, setSiteData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. جلب بيانات الخدمات من Supabase
+        const { data: servicesData, error: servicesError } = await supabase
+          .from('pages')
+          .select('*')
+          .eq('slug', 'services')
+          .maybeSingle()
+
+        if (servicesError) throw servicesError
+
+        // 2. جلب الإعدادات
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('settings')
+          .select('*')
+
+        if (settingsError) throw settingsError
+
+        const getSetting = (key: string) => {
+          return settingsData?.find(s => s.key === key)?.value || ''
+        }
+
+        // 3. جلب بيانات الخدمات من جدول service_cards
+        const { data: serviceCards, error: serviceCardsError } = await supabase
+          .from('service_cards')
+          .select('*')
+          .order('sort_order', { ascending: true })
+
+        if (serviceCardsError) throw serviceCardsError
+
+        // 4. جلب خطوات العملية
+        const { data: processSteps, error: processStepsError } = await supabase
+          .from('process_steps')
+          .select('*')
+          .order('step_number', { ascending: true })
+
+        if (processStepsError) throw processStepsError
+
+        // 5. بناء البيانات من قاعدة البيانات فقط
+        setSiteData({
+          home: {
+            companyName: getSetting('company_name') || "Sadiq Al-Barhi",
+            companySubtitle: getSetting('company_subtitle') || "Pharmaceutical & Medical Supplies",
+            logo: getSetting('logo') || ''
+          },
+          services: {
+            pageTitle: servicesData?.title || "Our Services",
+            pageDescription: servicesData?.subtitle || "Comprehensive range of specialized medical and pharmaceutical services",
+            serviceCards: serviceCards || [],
+            processSection: {
+              title: getSetting('process_title') || "How We Serve You",
+              steps: processSteps || []
+            }
+          },
+          contact: {
+            phone: getSetting('phone') || "+967 1 234567",
+            email: getSetting('email') || "info@sadiqalbarhi.com",
+            address: getSetting('address') || "Sana'a, Yemen"
+          }
+        })
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        // بيانات افتراضية في حالة الخطأ
+        setSiteData({
+          home: {
+            companyName: "Sadiq Al-Barhi",
+            companySubtitle: "Pharmaceutical & Medical Supplies",
+            logo: ''
+          },
+          services: {
+            pageTitle: "Our Services",
+            pageDescription: "Comprehensive range of specialized medical and pharmaceutical services",
+            serviceCards: [],
+            processSection: {
+              title: "How We Serve You",
+              steps: []
+            }
+          },
+          contact: {
+            phone: "+967 1 234567",
+            email: "info@sadiqalbarhi.com",
+            address: "Sana'a, Yemen"
+          }
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (isLoading || !siteData || !siteData.services) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <header className="header">
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="nav-logo">
+              {siteData.home.logo ? (
+                <img 
+                  src={siteData.home.logo} 
+                  alt={siteData.home.companyName} 
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <h2>{siteData.home.companyName}</h2>
+              )}
+              <span>{siteData.home.companySubtitle}</span>
+            </div>
+            <ul className="nav-menu">
+              <li className="nav-item">
+                <Link href="/" className="nav-link">Home</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/about" className="nav-link">About Us</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/products" className="nav-link">Products</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/services" className="nav-link active">Services</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/contact" className="nav-link">Contact</Link>
+              </li>
+            </ul>
+            <div className="hamburger">
+              <span className="bar"></span>
+              <span className="bar"></span>
+              <span className="bar"></span>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      {/* Page Header */}
+      <section className="hero-section" style={{
+        background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+        color: 'white',
+        padding: '120px 0 60px',
+        textAlign: 'center'
+      }}>
+        <div className="container">
+          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>{siteData.services.pageTitle}</h1>
+          <p style={{ fontSize: '1.2rem', opacity: 0.9, maxWidth: '700px', margin: '0 auto' }}>
+            {siteData.services.pageDescription}
+          </p>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="services-section" style={{ padding: '80px 0' }}>
+        <div className="container">
+          {siteData.services.serviceCards && siteData.services.serviceCards.length > 0 ? (
+            siteData.services.serviceCards.map((service: any, index: number) => (
+              <div key={index} className="service-card" style={{
+                background: 'white',
+                padding: '30px',
+                borderRadius: '10px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                marginBottom: '30px',
+                transition: 'transform 0.3s, box-shadow 0.3s'
+              }}>
+                <div className="service-header" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px',
+                  marginBottom: '15px'
+                }}>
+                  <div className="service-icon" style={{
+                    width: '50px',
+                    height: '50px',
+                    background: 'rgba(10, 110, 121, 0.1)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.5rem',
+                    color: '#0A6E79'
+                  }}>
+                    <i className={service.icon || "fas fa-star"}></i>
+                  </div>
+                  <h3 style={{ color: '#2C3E50', fontSize: '1.2rem', margin: 0 }}>{service.title || "Service Title"}</h3>
+                </div>
+                <p style={{ color: '#666', marginBottom: '15px', lineHeight: '1.6' }}>
+                  {service.description || "Service description"}
+                </p>
+                
+                {service.features && Array.isArray(service.features) && service.features.length > 0 && (
+                  <ul className="product-features" style={{
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0
+                  }}>
+                    {service.features.map((feature: string, featureIndex: number) => (
+                      <li key={featureIndex} style={{
+                        padding: '5px 0',
+                        color: '#555',
+                        fontSize: '0.95rem'
+                      }}>
+                        <i className="fas fa-check" style={{ color: '#0A6E79', marginRight: '10px' }}></i> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))
+          ) : (
+            <p style={{ textAlign: 'center', color: '#666' }}>No services found. Please add services to the database.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Service Process */}
+      <section className="service-process" style={{ padding: '80px 0', background: '#f8f9fa' }}>
+        <div className="container">
+          <h2 className="section-title" style={{ textAlign: 'center', fontSize: '2.5rem', color: '#2C3E50', marginBottom: '50px' }}>
+            {siteData.services.processSection?.title || "How We Serve You"}
+          </h2>
+          <div className="process-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '30px'
+          }}>
+            {siteData.services.processSection?.steps && siteData.services.processSection.steps.length > 0 ? (
+              siteData.services.processSection.steps.map((step: any, index: number) => (
+                <div key={index} className="process-step" style={{
+                  background: 'white',
+                  padding: '30px',
+                  borderRadius: '10px',
+                  textAlign: 'center',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                }}>
+                  <div className="step-number" style={{
+                    width: '50px',
+                    height: '50px',
+                    background: '#0A6E79',
+                    color: 'white',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 15px',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {step.step_number || (index + 1)}
+                  </div>
+                  <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>{step.title || "Step Title"}</h3>
+                  <p style={{ color: '#666' }}>{step.description || "Step description"}</p>
+                </div>
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', color: '#666', gridColumn: '1 / -1' }}>No process steps found. Please add steps to the database.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-section">
+              {siteData.home.logo ? (
+                <img 
+                  src={siteData.home.logo} 
+                  alt={siteData.home.companyName} 
+                  className="h-12 w-auto object-contain mb-2"
+                />
+              ) : (
+                <h3>{siteData.home.companyName}</h3>
+              )}
+              <p>{siteData.home.companySubtitle}</p>
+              <p>{siteData.contact.address}</p>
+              <div className="social-links">
+                <a href="#"><i className="fab fa-facebook"></i></a>
+                <a href="#"><i className="fab fa-twitter"></i></a>
+                <a href="#"><i className="fab fa-instagram"></i></a>
+                <a href="#"><i className="fab fa-linkedin"></i></a>
+              </div>
+            </div>
+            <div className="footer-section">
+              <h4>Quick Links</h4>
+              <ul>
+                <li><Link href="/">Home</Link></li>
+                <li><Link href="/about">About Us</Link></li>
+                <li><Link href="/products">Products</Link></li>
+                <li><Link href="/services">Services</Link></li>
+                <li><Link href="/contact">Contact</Link></li>
+              </ul>
+            </div>
+            <div className="footer-section">
+              <h4>Contact Information</h4>
+              <ul>
+                <li><i className="fas fa-phone"></i> {siteData.contact.phone}</li>
+                <li><i className="fas fa-envelope"></i> {siteData.contact.email}</li>
+                <li><i className="fas fa-map-marker-alt"></i> {siteData.contact.address}</li>
+              </ul>
+            </div>
+            <div className="footer-section">
+              <h4>Working Hours</h4>
+              <ul>
+                <li>Saturday - Thursday: 8:00 AM - 6:00 PM</li>
+                <li>Friday: Closed</li>
+                <li>Emergency Service: 24/7</li>
+              </ul>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2025 {siteData.home.companyName} {siteData.home.companySubtitle}. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
