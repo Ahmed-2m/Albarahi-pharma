@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "مؤسسة صادق البرحي - المستلزمات الطبية والأدوية",
+  title: "مؤسسة صادق البرحي - للمستلزمات الطبية والأدوية",
   description: "الموقع الرسمي لمؤسسة صادق البرحي للتجهيزات والمستلزمات الطبية",
 };
 
