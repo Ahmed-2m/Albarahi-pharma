@@ -103,42 +103,6 @@ export default function ContactPage() {
 
   return (
     <div>
-      {/* Header */}
-      <header className="header" style={{
-        background: '#fff',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        position: 'fixed',
-        top: 0,
-        width: '100%',
-        zIndex: 1000
-      }}>
-        <nav className="navbar" style={{ padding: '1rem 0' }}>
-          <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-            <div className="logo" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-10 w-auto object-contain"
-                />
-              ) : (
-                <Link href="/" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0A6E79', textDecoration: 'none', lineHeight: '2' }}>{siteData.home.companyName}</Link>
-              )}
-              <span className="subtitle" style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'normal', marginTop: '2px' }}>{siteData.home.companySubtitle}</span>
-            </div>
-            <nav className="nav">
-              <ul style={{ display: 'flex', listStyle: 'none', gap: '2rem' }}>
-                <li><Link href="/" style={{ textDecoration: 'none', color: '#333', fontWeight: '500' }}>Home</Link></li>
-                <li><Link href="/about" style={{ textDecoration: 'none', color: '#333', fontWeight: '500' }}>About Us</Link></li>
-                <li><Link href="/products" style={{ textDecoration: 'none', color: '#333', fontWeight: '500' }}>Products</Link></li>
-                <li><Link href="/services" style={{ textDecoration: 'none', color: '#333', fontWeight: '500' }}>Services</Link></li>
-                <li><Link href="/contact" style={{ textDecoration: 'none', color: '#0A6E79', fontWeight: '500' }}>Contact</Link></li>
-              </ul>
-            </nav>
-          </div>
-        </nav>
-      </header>
-
       {/* Hero Section */}
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
@@ -329,75 +293,6 @@ export default function ContactPage() {
           </a>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer" style={{
-        background: '#1A2A3A',
-        color: 'white',
-        padding: '3rem 0 1rem'
-      }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <div className="footer-content" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '2rem',
-            marginBottom: '2rem'
-          }}>
-            <div className="footer-section">
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-12 w-auto object-contain mb-2"
-                />
-              ) : (
-                <h3 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.2rem' }}>{siteData.home.companyName}</h3>
-              )}
-              <p style={{ color: '#ccc', lineHeight: '1.6', marginBottom: '0.5rem' }}>{siteData.home.companySubtitle}</p>
-              <p style={{ color: '#ccc', lineHeight: '1.6', marginBottom: '0.5rem' }}>{siteData.contact.address}</p>
-              <div className="social-links" style={{ display: 'flex', gap: '15px', marginTop: '15px' }}>
-                <a href="#"><i className="fab fa-facebook" style={{ color: '#ccc', fontSize: '1.2rem' }}></i></a>
-                <a href="#"><i className="fab fa-twitter" style={{ color: '#ccc', fontSize: '1.2rem' }}></i></a>
-                <a href="#"><i className="fab fa-instagram" style={{ color: '#ccc', fontSize: '1.2rem' }}></i></a>
-                <a href="#"><i className="fab fa-linkedin" style={{ color: '#ccc', fontSize: '1.2rem' }}></i></a>
-              </div>
-            </div>
-            <div className="footer-section">
-              <h4 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.2rem' }}>Quick Links</h4>
-              <ul style={{ listStyle: 'none' }}>
-                <li style={{ marginBottom: '0.5rem' }}><Link href="/" style={{ color: '#ccc', textDecoration: 'none' }}>Home</Link></li>
-                <li style={{ marginBottom: '0.5rem' }}><Link href="/about" style={{ color: '#ccc', textDecoration: 'none' }}>About Us</Link></li>
-                <li style={{ marginBottom: '0.5rem' }}><Link href="/products" style={{ color: '#ccc', textDecoration: 'none' }}>Products</Link></li>
-                <li style={{ marginBottom: '0.5rem' }}><Link href="/services" style={{ color: '#ccc', textDecoration: 'none' }}>Services</Link></li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.2rem' }}>Contact Information</h4>
-              <ul style={{ listStyle: 'none' }}>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}><i className="fas fa-phone" style={{ marginRight: '10px' }}></i> {siteData.contact.phone}</li>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}><i className="fas fa-envelope" style={{ marginRight: '10px' }}></i> {siteData.contact.email}</li>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}><i className="fas fa-map-marker-alt" style={{ marginRight: '10px' }}></i> {siteData.contact.address}</li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.2rem' }}>Working Hours</h4>
-              <ul style={{ listStyle: 'none' }}>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}>Saturday - Thursday: 8:00 AM - 6:00 PM</li>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}>Friday: Closed</li>
-                <li style={{ marginBottom: '0.5rem', color: '#ccc' }}>Emergency Service: 24/7</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom" style={{
-            borderTop: '1px solid #333',
-            paddingTop: '1rem',
-            textAlign: 'center',
-            color: '#999'
-          }}>
-            <p>&copy; 2025 {siteData.home.companyName} {siteData.home.companySubtitle}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

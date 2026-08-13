@@ -10,12 +10,15 @@ export default function ProductsPage() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [settings, setSettings] = useState<any>({})
+  
+  const [pageData, setPageData] = useState<{ title: string; subtitle: string }>({
+    title: "Our Products",
+    subtitle: "Explore our wide range of pharmaceutical and medical products"
+  })
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // جلب المنتجات
         const { data: products, error: productsError } = await supabase
           .from('products')
           .select('*')
@@ -23,23 +26,24 @@ export default function ProductsPage() {
 
         if (productsError) throw productsError
 
-        // جلب الإعدادات
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('settings')
-          .select('*')
+        const { data: pageInfo, error: pageError } = await supabase
+          .from('pages')
+          .select('title, subtitle')
+          .eq('slug', 'products')
+          .single()
 
-        if (settingsError) throw settingsError
+        if (!pageError && pageInfo) {
+          setPageData({
+            title: pageInfo.title || "Our Products",
+            subtitle: pageInfo.subtitle || "Explore our wide range of pharmaceutical and medical products"
+          })
+        }
 
-        // استخراج التصنيفات
         const uniqueCategories = [...new Set(products?.map(p => p.category) || [])]
         
         setAllProducts(products || [])
         setFilteredProducts(products || [])
         setCategories(uniqueCategories)
-        setSettings(settingsData?.reduce((acc: any, curr: any) => {
-          acc[curr.key] = curr.value
-          return acc
-        }, {}) || {})
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -50,7 +54,6 @@ export default function ProductsPage() {
     fetchData()
   }, [])
 
-  // دالة التصفية
   const filterProducts = (category: string) => {
     setActiveFilter(category)
     if (category === 'all') {
@@ -61,10 +64,8 @@ export default function ProductsPage() {
     }
   }
 
-  // تجميع المنتجات حسب التصنيف للعرض
   const getCategoryProducts = () => {
     if (activeFilter === 'all') {
-      // عرض جميع المنتجات مجمعة حسب التصنيف
       const grouped: { [key: string]: any[] } = {}
       allProducts.forEach((product: any) => {
         if (!grouped[product.category]) {
@@ -74,7 +75,6 @@ export default function ProductsPage() {
       })
       return grouped
     } else {
-      // عرض التصنيف المحدد فقط
       const grouped: { [key: string]: any[] } = {}
       const filtered = allProducts.filter(p => p.category === activeFilter)
       if (filtered.length > 0) {
@@ -84,62 +84,28 @@ export default function ProductsPage() {
     }
   }
 
+  // دالة لجلب الوصف بدقة مع احترام عملية الحذف والتفريغ
+  const getCategoryDescription = (categoryName: string) => {
+    const catProducts = allProducts.filter(p => p.category === categoryName);
+    const baseItem = catProducts.find(p => p.name?.startsWith("عنصر أساسي -") || p.description);
+    
+    // إذا وجدنا وصفاً حقيقياً ومكتوباً في قاعدة البيانات نقوم بإرجاعه، وإلا نجعله فارغاً تماماً
+    if (baseItem && baseItem.description && baseItem.description.trim() !== "" && baseItem.description !== "وصف الفئة") {
+      return baseItem.description;
+    }
+    
+    return ""; // إرجاع نص فارغ لكي يختفي الوصف تماماً عند حذفه
+  };
+
   const groupedProducts = getCategoryProducts()
   const categoryNames = Object.keys(groupedProducts)
-
-  // بيانات من قاعدة البيانات
-  const companyName = settings.company_name || "Sadiq Al-Barhi"
-  const companySubtitle = settings.company_subtitle || "Pharmaceutical & Medical Supplies"
-  const logo = settings.logo || ''
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading products...</div>
   }
 
   return (
-    <div>
-      {/* Header */}
-      <header className="header">
-        <nav className="navbar">
-          <div className="nav-container">
-            <div className="nav-logo">
-              {logo ? (
-                <img 
-                  src={logo} 
-                  alt={companyName} 
-                  className="h-10 w-auto object-contain"
-                />
-              ) : (
-                <h2>{companyName}</h2>
-              )}
-              <span>{companySubtitle}</span>
-            </div>
-            <ul className="nav-menu">
-              <li className="nav-item">
-                <Link href="/" className="nav-link">Home</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/about" className="nav-link">About Us</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/products" className="nav-link active">Products</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/services" className="nav-link">Services</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/contact" className="nav-link">Contact</Link>
-              </li>
-            </ul>
-            <div className="hamburger">
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-            </div>
-          </div>
-        </nav>
-      </header>
-
+    <div style={{ background: '#f4f6f8', minHeight: '100vh' }}>
       {/* Page Header */}
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
@@ -147,24 +113,24 @@ export default function ProductsPage() {
         padding: '120px 0 60px',
         textAlign: 'center'
       }}>
-        <div className="container">
-          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>Our Products</h1>
+        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>{pageData.title}</h1>
           <p style={{ fontSize: '1.2rem', opacity: 0.9, maxWidth: '700px', margin: '0 auto' }}>
-            Explore our wide range of pharmaceutical and medical products
+            {pageData.subtitle}
           </p>
         </div>
       </section>
 
       {/* Products Section */}
-      <section className="products-section" style={{ padding: '80px 0' }}>
-        <div className="container">
+      <section className="products-section" style={{ padding: '60px 0' }}>
+        <div className="container" style={{ maxWidth: '1250px', margin: '0 auto', padding: '0 20px' }}>
           {/* Product Filters */}
           <div className="products-filter" style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: '10px',
             justifyContent: 'center',
-            marginBottom: '50px'
+            marginBottom: '40px'
           }}>
             <button 
               className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
@@ -173,7 +139,7 @@ export default function ProductsPage() {
                 padding: '10px 25px',
                 borderRadius: '30px',
                 border: '2px solid #0A6E79',
-                background: activeFilter === 'all' ? '#0A6E79' : 'transparent',
+                background: activeFilter === 'all' ? '#0A6E79' : 'white',
                 color: activeFilter === 'all' ? 'white' : '#0A6E79',
                 cursor: 'pointer',
                 fontWeight: '600',
@@ -191,7 +157,7 @@ export default function ProductsPage() {
                   padding: '10px 25px',
                   borderRadius: '30px',
                   border: '2px solid #0A6E79',
-                  background: activeFilter === category ? '#0A6E79' : 'transparent',
+                  background: activeFilter === category ? '#0A6E79' : 'white',
                   color: activeFilter === category ? 'white' : '#0A6E79',
                   cursor: 'pointer',
                   fontWeight: '600',
@@ -205,54 +171,158 @@ export default function ProductsPage() {
 
           {/* Product Categories */}
           {categoryNames.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '60px' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '30px', 
+              justifyContent: 'center',
+              width: '100%' 
+            }}>
               {categoryNames.map((categoryName: string, index: number) => {
                 const categoryProducts = groupedProducts[categoryName]
+                const categoryDescription = getCategoryDescription(categoryName)
+
                 return (
                   <div key={index} className="product-detail" style={{
-                    display: 'grid',
-                    gridTemplateColumns: '300px 1fr',
-                    gap: '40px',
-                    padding: '40px',
-                    background: '#f8f9fa',
-                    borderRadius: '15px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                    padding: '25px',
+                    background: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    boxSizing: 'border-box',
+                    flex: '0 1 calc(50% - 15px)',
+                    minWidth: '350px',
+                    maxWidth: '580px'
                   }}>
-                    <div>
-                      <img 
-                        className="product-category-image" 
-                        src={categoryProducts[0]?.image_url || '/images/default-product.jpg'} 
-                        alt={categoryName}
-                        style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '10px' }}
-                      />
-                    </div>
-                    <div className="product-detail-info">
-                      <h3 style={{ color: '#2C3E50', fontSize: '1.8rem', marginBottom: '10px' }}>{categoryName}</h3>
-                      <p style={{ color: '#666', marginBottom: '20px' }}>
-                        High-quality {categoryName} for healthcare professionals
-                      </p>
+                    <div className="product-detail-info" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                       
-                      <h4 style={{ color: '#2C3E50', marginBottom: '10px' }}>Available Products:</h4>
-                      <ul className="product-features" style={{ listStyle: 'none', padding: 0, marginBottom: '20px' }}>
-                        {categoryProducts.map((product: any, idx: number) => (
-                          <li key={idx} style={{ padding: '5px 0', color: '#555' }}>
-                            <i className="fas fa-check" style={{ color: '#0A6E79', marginRight: '10px' }}></i> {product.name}
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <Link href="/contact" className="btn btn-primary" style={{
+                      {/* عنوان الفئة */}
+                      <div style={{
                         display: 'inline-block',
-                        padding: '12px 30px',
-                        background: '#0A6E79',
+                        background: 'linear-gradient(135deg, #0A6E79 0%, #0d8390 100%)',
                         color: 'white',
-                        borderRadius: '30px',
-                        textDecoration: 'none',
-                        fontWeight: '600',
-                        transition: 'all 0.3s'
+                        padding: '8px 20px',
+                        borderRadius: '10px',
+                        marginBottom: categoryDescription ? '8px' : '15px',
+                        boxShadow: '0 4px 12px rgba(10, 110, 121, 0.2)',
+                        alignSelf: 'center'
                       }}>
-                        Inquire Now
-                      </Link>
+                        <h3 style={{ color: 'white', fontSize: '1.2rem', margin: 0, fontWeight: '700', letterSpacing: '0.5px' }}>
+                          {categoryName}
+                        </h3>
+                      </div>
+                      
+                      {/* وصف الفئة (يظهر فقط إذا كان موجوداً ولم يتم حذفه) */}
+                      {categoryDescription && (
+                        <p style={{ color: '#64748b', marginBottom: '15px', fontSize: '0.85rem' }}>
+                          {categoryDescription}
+                        </p>
+                      )}
+                      
+                      {/* شبكة المنتجات */}
+                      <div 
+                        className="hide-scrollbar"
+                        style={{ 
+                          display: 'flex', 
+                          flexWrap: 'wrap',
+                          gap: '12px', 
+                          marginBottom: '20px',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          maxHeight: '280px', 
+                          overflowY: 'auto',  
+                          padding: '5px',
+                          scrollbarWidth: 'none', 
+                          msOverflowStyle: 'none'  
+                        }}
+                      >
+                        <style dangerouslySetInnerHTML={{ __html: `
+                          .hide-scrollbar::-webkit-scrollbar {
+                            display: none; 
+                          }
+                        `}} />
+
+                        {categoryProducts.map((product: any, idx: number) => (
+                          product.name?.startsWith("عنصر أساسي -") ? null : (
+                            <div 
+                              key={idx} 
+                              className="product-card-item"
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '10px',
+                                padding: '10px',
+                                textAlign: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '6px',
+                                width: '140px',
+                                minHeight: '135px',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                                e.currentTarget.style.boxShadow = '0 10px 20px rgba(10, 110, 121, 0.12)';
+                                e.currentTarget.style.borderColor = '#0A6E79';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                              }}
+                            >
+                              <div style={{ width: '100%', height: '65px', background: '#f8fafc', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {product.image_url ? (
+                                  <img 
+                                    src={product.image_url} 
+                                    alt={product.name} 
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain', transition: 'transform 0.3s ease' }} 
+                                  />
+                                ) : (
+                                  <span style={{ fontSize: '9px', color: '#94a3b8' }}>No Image</span>
+                                )}
+                              </div>
+                              
+                              <div style={{
+                                width: '100%',
+                                background: 'linear-gradient(135deg, #0A6E79 0%, #0d8390 100%)',
+                                padding: '4px 6px',
+                                borderRadius: '5px',
+                                boxShadow: '0 2px 4px rgba(10, 110, 121, 0.15)'
+                              }}>
+                                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#ffffff', lineHeight: '1.2', display: 'block' }}>
+                                  {product.name}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                      
+                      <div style={{ marginTop: 'auto' }}>
+                        <Link href="/contact" className="btn btn-primary" style={{
+                          display: 'inline-block',
+                          padding: '10px 26px',
+                          background: '#0A6E79',
+                          color: 'white',
+                          borderRadius: '30px',
+                          textDecoration: 'none',
+                          fontWeight: '600',
+                          fontSize: '0.85rem',
+                          transition: 'all 0.3s'
+                        }}>
+                          Inquire Now
+                        </Link>
+                      </div>
+
                     </div>
                   </div>
                 )
@@ -268,8 +338,8 @@ export default function ProductsPage() {
       </section>
 
       {/* Quality Assurance */}
-      <section className="quality-section" style={{ padding: '80px 0', background: '#f8f9fa' }}>
-        <div className="container">
+      <section className="quality-section" style={{ padding: '80px 0', background: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
+        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <h2 className="section-title" style={{ textAlign: 'center', fontSize: '2.5rem', color: '#2C3E50', marginBottom: '50px' }}>
             Quality Assurance
           </h2>
@@ -279,108 +349,56 @@ export default function ProductsPage() {
             gap: '30px'
           }}>
             <div className="quality-item" style={{
-              background: 'white',
+              background: '#f8fafc',
               padding: '30px',
-              borderRadius: '10px',
+              borderRadius: '12px',
               textAlign: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
             }}>
               <i className="fas fa-microscope" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
               <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Laboratory Testing</h3>
-              <p style={{ color: '#666' }}>Every product undergoes rigorous laboratory testing to ensure purity, potency, and safety before distribution.</p>
+              <p style={{ color: '#64748b' }}>Every product undergoes rigorous laboratory testing to ensure purity, potency, and safety before distribution.</p>
             </div>
             <div className="quality-item" style={{
-              background: 'white',
+              background: '#f8fafc',
               padding: '30px',
-              borderRadius: '10px',
+              borderRadius: '12px',
               textAlign: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
             }}>
               <i className="fas fa-shield-alt" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
               <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Authenticity Guarantee</h3>
-              <p style={{ color: '#666' }}>We guarantee 100% authentic products sourced directly from authorized manufacturers and distributors.</p>
+              <p style={{ color: '#64748b' }}>We guarantee 100% authentic products sourced directly from authorized manufacturers and distributors.</p>
             </div>
             <div className="quality-item" style={{
-              background: 'white',
+              background: '#f8fafc',
               padding: '30px',
-              borderRadius: '10px',
+              borderRadius: '12px',
               textAlign: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
             }}>
               <i className="fas fa-thermometer-half" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
               <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Proper Storage</h3>
-              <p style={{ color: '#666' }}>Temperature-controlled storage facilities ensure medications maintain their efficacy throughout the supply chain.</p>
+              <p style={{ color: '#64748b' }}>Temperature-controlled storage facilities ensure medications maintain their efficacy throughout the supply chain.</p>
             </div>
             <div className="quality-item" style={{
-              background: 'white',
+              background: '#f8fafc',
               padding: '30px',
-              borderRadius: '10px',
+              borderRadius: '12px',
               textAlign: 'center',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
             }}>
               <i className="fas fa-certificate" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
               <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Regulatory Compliance</h3>
-              <p style={{ color: '#666' }}>All products comply with local and international pharmaceutical regulations and quality standards.</p>
+              <p style={{ color: '#64748b' }}>All products comply with local and international pharmaceutical regulations and quality standards.</p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div className="footer-section">
-              {logo ? (
-                <img 
-                  src={logo} 
-                  alt={companyName} 
-                  className="h-12 w-auto object-contain mb-2"
-                />
-              ) : (
-                <h3>{companyName}</h3>
-              )}
-              <p>{companySubtitle}</p>
-              <p>{settings.address || 'Sana\'a, Yemen'}</p>
-              <div className="social-links">
-                <a href="#"><i className="fab fa-facebook"></i></a>
-                <a href="#"><i className="fab fa-twitter"></i></a>
-                <a href="#"><i className="fab fa-instagram"></i></a>
-                <a href="#"><i className="fab fa-linkedin"></i></a>
-              </div>
-            </div>
-            <div className="footer-section">
-              <h4>Quick Links</h4>
-              <ul>
-                <li><Link href="/">Home</Link></li>
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/products">Products</Link></li>
-                <li><Link href="/services">Services</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Contact Information</h4>
-              <ul>
-                <li><i className="fas fa-phone"></i> {settings.phone || '+967 1 234567'}</li>
-                <li><i className="fas fa-envelope"></i> {settings.email || 'info@sadiqalbarhi.com'}</li>
-                <li><i className="fas fa-map-marker-alt"></i> {settings.address || 'Sana\'a, Yemen'}</li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Working Hours</h4>
-              <ul>
-                <li>Saturday - Thursday: 8:00 AM - 6:00 PM</li>
-                <li>Friday: Closed</li>
-                <li>Emergency Service: 24/7</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2025 {companyName} {companySubtitle}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

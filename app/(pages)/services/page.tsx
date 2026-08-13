@@ -117,48 +117,6 @@ export default function ServicesPage() {
 
   return (
     <div>
-      {/* Header */}
-      <header className="header">
-        <nav className="navbar">
-          <div className="nav-container">
-            <div className="nav-logo">
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-10 w-auto object-contain"
-                />
-              ) : (
-                <h2>{siteData.home.companyName}</h2>
-              )}
-              <span>{siteData.home.companySubtitle}</span>
-            </div>
-            <ul className="nav-menu">
-              <li className="nav-item">
-                <Link href="/" className="nav-link">Home</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/about" className="nav-link">About Us</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/products" className="nav-link">Products</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/services" className="nav-link active">Services</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/contact" className="nav-link">Contact</Link>
-              </li>
-            </ul>
-            <div className="hamburger">
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-            </div>
-          </div>
-        </nav>
-      </header>
-
       {/* Page Header */}
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
@@ -282,62 +240,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div className="footer-section">
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-12 w-auto object-contain mb-2"
-                />
-              ) : (
-                <h3>{siteData.home.companyName}</h3>
-              )}
-              <p>{siteData.home.companySubtitle}</p>
-              <p>{siteData.contact.address}</p>
-              <div className="social-links">
-                <a href="#"><i className="fab fa-facebook"></i></a>
-                <a href="#"><i className="fab fa-twitter"></i></a>
-                <a href="#"><i className="fab fa-instagram"></i></a>
-                <a href="#"><i className="fab fa-linkedin"></i></a>
-              </div>
-            </div>
-            <div className="footer-section">
-              <h4>Quick Links</h4>
-              <ul>
-                <li><Link href="/">Home</Link></li>
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/products">Products</Link></li>
-                <li><Link href="/services">Services</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Contact Information</h4>
-              <ul>
-                <li><i className="fas fa-phone"></i> {siteData.contact.phone}</li>
-                <li><i className="fas fa-envelope"></i> {siteData.contact.email}</li>
-                <li><i className="fas fa-map-marker-alt"></i> {siteData.contact.address}</li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Working Hours</h4>
-              <ul>
-                <li>Saturday - Thursday: 8:00 AM - 6:00 PM</li>
-                <li>Friday: Closed</li>
-                <li>Emergency Service: 24/7</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2025 {siteData.home.companyName} {siteData.home.companySubtitle}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

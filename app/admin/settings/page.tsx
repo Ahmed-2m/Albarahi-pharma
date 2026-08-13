@@ -103,7 +103,7 @@ export default function SettingsPage() {
     { id: "company", label: "معلومات الهوية والشركة", icon: Building },
     { id: "contact", label: "بيانات التواصل", icon: PhoneCall },
     { id: "emergency", label: "قسم الطوارئ", icon: AlertTriangle },
-    { id: "content", label: "النصوص والرؤية", icon: FileText },
+    { id: "content", label: "نموذج الرسالة ونموذج التواصل", icon: FileText },
   ];
 
   // دالة رفع الصورة
@@ -523,10 +523,10 @@ export default function SettingsPage() {
               <div className="border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                   <FileText size={18} className="text-teal-600" />
-                  النصوص التعريفية والرسالة والرؤية
+                  نموذج الرسالة ونموذج التواصل
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  عناوين النماذج، نص الرسالة ورؤية المؤسسة
+                  عناوين النماذج والوصف
                 </p>
               </div>
 

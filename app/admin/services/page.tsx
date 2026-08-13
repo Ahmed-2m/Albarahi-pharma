@@ -13,10 +13,8 @@ import {
   X,
   Save,
   Sparkles,
-  Layers,
   ListPlus,
   ArrowUpDown,
-  Tag,
   Check,
 } from "lucide-react";
 
@@ -29,6 +27,30 @@ interface ServiceCard {
   sort_order: number | null;
 }
 
+// قائمة الـ 20 أيقونة الطبية والصيدلانية الموحدة
+const MEDICAL_ICONS = [
+  { class: "fas fa-pills", label: "أدوية وحبوب" },
+  { class: "fas fa-capsules", label: "كبسولات دواء" },
+  { class: "fas fa-medkit", label: "حقيبة إسعافات" },
+  { class: "fas fa-hospital", label: "مؤسسة طبية" },
+  { class: "fas fa-stethoscope", label: "سماعة وفحص" },
+  { class: "fas fa-heartbeat", label: "نبضات ورعاية" },
+  { class: "fas fa-syringe", label: "حقن ومحاقن" },
+  { class: "fas fa-prescription-bottle-medical", label: "وصفة طبية" },
+  { class: "fas fa-microscope", label: "مختبر وأبحاث" },
+  { class: "fas fa-shield-alt", label: "جودة وحماية" },
+  { class: "fas fa-truck-medical", label: "نقل وتوريد طبي" },
+  { class: "fas fa-thermometer", label: "مقياس حرارة" },
+  { class: "fas fa-dna", label: "جينات وأدوية" },
+  { class: "fas fa-briefcase-medical", label: "أدوات مهنية" },
+  { class: "fas fa-mortar-pestle", label: "هاون صيدلاني" },
+  { class: "fas fa-hand-holding-medical", label: "رعاية صحية" },
+  { class: "fas fa-first-aid", label: "طوارئ وإسعاف" },
+  { class: "fas fa-user-md", label: "طبيب متخصص" },
+  { class: "fas fa-laptop-medical", label: "أنظمة طبية" },
+  { class: "fas fa-award", label: "جودة معتمدة" },
+];
+
 export default function AdminServices() {
   const [services, setServices] = useState<ServiceCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +61,7 @@ export default function AdminServices() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   const [formData, setFormData] = useState({
-    icon: "",
+    icon: "fas fa-pills", // القيمة الافتتاحية أول أيقونة
     title: "",
     description: "",
     features: [] as string[],
@@ -93,7 +115,7 @@ export default function AdminServices() {
         setMessage({ text: "تم إضافة الخدمة الجديدة بنجاح!", type: "success" });
       }
 
-      setFormData({ icon: "", title: "", description: "", features: [], sort_order: 0 });
+      setFormData({ icon: "fas fa-pills", title: "", description: "", features: [], sort_order: 0 });
       setEditingId(null);
       fetchServices();
       setTimeout(() => setMessage(null), 3500);
@@ -108,7 +130,7 @@ export default function AdminServices() {
   const handleEdit = (service: ServiceCard) => {
     setEditingId(service.id);
     setFormData({
-      icon: service.icon || "",
+      icon: service.icon || "fas fa-pills",
       title: service.title || "",
       description: service.description || "",
       features: service.features || [],
@@ -137,7 +159,7 @@ export default function AdminServices() {
 
   const handleCancel = () => {
     setEditingId(null);
-    setFormData({ icon: "", title: "", description: "", features: [], sort_order: 0 });
+    setFormData({ icon: "fas fa-pills", title: "", description: "", features: [], sort_order: 0 });
     setNewFeatureText("");
   };
 
@@ -211,7 +233,7 @@ export default function AdminServices() {
           </div>
           <button
             onClick={() => setMessage(null)}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-400 hover:text-slate-600 cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -275,36 +297,47 @@ export default function AdminServices() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                عنوان الخدمة <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
-                placeholder="مثال: التوريد السريع، الدعم الفني الصيدلاني..."
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              عنوان الخدمة <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+              placeholder="مثال: التوريد السريع، الدعم الفني الصيدلاني..."
+              required
+            />
+          </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                رمز الأيقونة (FontAwesome / Class) <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <Tag className="absolute right-3.5 top-3 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  value={formData.icon}
-                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                  className="w-full pl-4 pr-10 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono"
-                  placeholder="fas fa-shipping-fast"
-                  required
-                />
-              </div>
+          {/* اختيار الأيقونة من المعرض الشبكي للـ 20 أيقونة */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              اختر أيقونة الخدمة الطبية <span className="text-rose-500">*</span>
+            </label>
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-2 max-h-52 overflow-y-auto p-2 bg-slate-50/80 border border-slate-200 rounded-2xl">
+              {MEDICAL_ICONS.map((iconItem, idx) => {
+                const isSelected = formData.icon === iconItem.class;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, icon: iconItem.class })}
+                    title={iconItem.label}
+                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm scale-105"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700"
+                    }`}
+                  >
+                    <i className={`${iconItem.class} text-lg mb-1`} />
+                    <span className="text-[9px] text-center truncate w-full font-medium">
+                      {iconItem.label.split(" ")[0]}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -369,7 +402,7 @@ export default function AdminServices() {
                     <button
                       type="button"
                       onClick={() => handleRemoveFeaturePill(idx)}
-                      className="text-slate-400 hover:text-rose-600 mr-1 transition-colors"
+                      className="text-slate-400 hover:text-rose-600 mr-1 transition-colors cursor-pointer"
                     >
                       <X size={13} />
                     </button>
@@ -508,4 +541,4 @@ export default function AdminServices() {
       </div>
     </div>
   );
-}
+}

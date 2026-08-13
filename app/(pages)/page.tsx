@@ -14,34 +14,64 @@ export default async function HomePage() {
     .from('settings')
     .select('*')
 
-  // 3. جلب المميزات (Features)
-  const { data: features } = await supabase
-    .from('features')
-    .select('*')
-    .eq('is_active', true)
-    .order('order', { ascending: true })
-
-  // 4. جلب الإحصائيات (Statistics)
+  // 3. جلب الإحصائيات (Statistics)
   const { data: statistics } = await supabase
     .from('statistics')
     .select('*')
     .eq('is_active', true)
     .order('order', { ascending: true })
 
+  // 4. جلب خدمات لوحة التحكم
+  const { data: serviceCards, error: servicesError } = await supabase
+    .from('service_cards')
+    .select('*')
+    .order('sort_order', { ascending: true })
+
+  if (servicesError) {
+    console.error("Error fetching service cards:", servicesError)
+  }
+
+  // 5. جلب المنتجات الحقيقية لعرضها في قسم Our Featured Products مع تدويرها أسبوعياً
+  const { data: allProducts, error: productsError } = await supabase
+    .from('products')
+    .select('*')
+
+  let featuredProducts: any[] = []
+
+  if (!productsError && allProducts) {
+    // تصفية واستبعاد عناصر وصف الفئات الأساسية
+    const validProducts = allProducts.filter(p => !p.name?.startsWith("عنصر أساسي -"));
+
+    if (validProducts.length > 0) {
+      // حساب رقم الأسبوع الحالي في السنة لتتغير المنتجات تلقائياً كل أسبوع
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const weekNumber = Math.ceil((((now.getTime() - startOfYear.getTime()) / 86400000) + startOfYear.getDay() + 1) / 7);
+      
+      const countToTake = Math.min(3, validProducts.length); // عرض 3 منتجات
+      const startIndex = (weekNumber * countToTake) % validProducts.length;
+      
+      // سحب المنتجات وتدويرها بناءً على الأسبوع
+      for (let i = 0; i < countToTake; i++) {
+        const index = (startIndex + i) % validProducts.length;
+        featuredProducts.push(validProducts[index]);
+      }
+    }
+  }
+
   const getSetting = (key: string) => {
     return settings?.find(s => s.key === key)?.value || ''
   }
 
-  // بناء البيانات من قاعدة البيانات فقط
   const siteData = {
     home: {
-      companyName: homeData?.title || "Sadiq Al-Barhi",
+      companyName: getSetting('company_name') || "Sadiq Al-Barhi",
       companySubtitle: getSetting('company_subtitle') || "Pharmaceutical & Medical Supplies",
       logo: getSetting('logo') || '',
       heroTitle: homeData?.subtitle || "Towards a Better Healthcare Future",
       heroDescription: homeData?.content || "Sadiq Al-Barhi Pharmaceutical & Medical Supplies - Your trusted partner in healthcare, providing quality medicines and medical supplies in Yemen.",
       heroImage: homeData?.image_url || "/images/hero.jpg",
-      features: features || [],
+      services: serviceCards || [],
       statistics: {
         sectionTitle: "Our Achievements",
         sectionDescription: "Numbers that speak for our excellence",
@@ -57,48 +87,6 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Header */}
-      <header className="header">
-        <nav className="navbar">
-          <div className="nav-container">
-            <div className="nav-logo">
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-10 w-auto object-contain"
-                />
-              ) : (
-                <h2>{siteData.home.companyName}</h2>
-              )}
-              <span>{siteData.home.companySubtitle}</span>
-            </div>
-            <ul className="nav-menu">
-              <li className="nav-item">
-                <Link href="/" className="nav-link active">Home</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/about" className="nav-link">About Us</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/products" className="nav-link">Products</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/services" className="nav-link">Services</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/contact" className="nav-link">Contact</Link>
-              </li>
-            </ul>
-            <div className="hamburger">
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-            </div>
-          </div>
-        </nav>
-      </header>
-
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
@@ -110,64 +98,149 @@ export default async function HomePage() {
               <Link href="/about" className="btn btn-secondary">Learn About Us</Link>
             </div>
           </div>
-          <div className="hero-image">
+          
+          {/* --- تعديل: قمنا بتحديد الـ div الذي يحتوي على الصورة وإعطائه كلاس تفاعلي --- */}
+          <div className="hero-image hero-image-interactive">
             <img src={siteData.home.heroImage} alt="Modern pharmaceutical laboratory" />
           </div>
         </div>
       </section>
 
-      {/* Features Section - من قاعدة البيانات */}
+      {/* باقي أقسام الموقع */}
       <section className="features">
         <div className="container">
-          <h2 className="section-title">Why Choose Us?</h2>
-          <div className="features-grid">
-            {siteData.home.features.map((feature: any, index: number) => (
-              <div key={index} className="feature-card">
-                <div className="feature-icon">
-                  <i className={feature.icon}></i>
-                </div>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-              </div>
-            ))}
+          {/* عنوان القسم محاط بإطار أخضر أنيق ومتناسق */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span style={{ 
+              fontSize: '1.8rem', 
+              color: '#0A6E79', 
+              fontWeight: '700', 
+              backgroundColor: '#e6f4f6', 
+              border: '2px solid #0A6E79', 
+              padding: '10px 30px', 
+              borderRadius: '30px', 
+              display: 'inline-block',
+              boxShadow: '0 4px 12px rgba(10, 110, 121, 0.1)'
+            }}>
+              Why Choose Us?
+            </span>
           </div>
+          
+          {siteData.home.services.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>No features available at the moment.</p>
+          ) : (
+            <div className="features-grid">
+              {siteData.home.services.map((service: any, index: number) => (
+                <div 
+                  key={index} 
+                  className="feature-card" 
+                  style={{ 
+                    maxHeight: '280px',      
+                    overflowY: 'auto',        
+                    scrollbarWidth: 'none',   
+                    msOverflowStyle: 'none',  
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}
+                >
+                  <style dangerouslySetInnerHTML={{ __html: `
+                    .feature-card::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}} />
+
+                  <div className="feature-icon">
+                    <i className={service.icon || 'fas fa-check-circle'}></i>
+                  </div>
+                  <h3 style={{ fontWeight: 'bold' }}>{service.title}</h3>
+                  <p>{service.description}</p>
+
+                  {service.features && Array.isArray(service.features) && service.features.length > 0 && (
+                    <ul style={{ listStyle: 'none', padding: 0, marginTop: '15px', textAlign: 'left', width: '100%' }} dir="ltr">
+                      {service.features.map((feat: string, fIdx: number) => (
+                        <li key={fIdx} style={{ fontSize: '0.85rem', color: '#555', padding: '3px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ color: '#0A6E79', fontWeight: 'bold' }}>✓</span> {feat}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Products Preview */}
+      {/* Products Preview (Featured Products) */}
       <section className="products-preview">
         <div className="container">
-          <h2 className="section-title">Our Featured Products</h2>
-          <div className="products-grid">
-            <div className="product-card">
-              <img src="/images/default-product.jpg" alt="Cardiovascular Medicines" />
-              <div className="product-info">
-                <h3>Cardiovascular Medicines</h3>
-                <p>High-quality products for healthcare professionals.</p>
-                <Link href="/products" className="btn btn-outline">Learn More</Link>
-              </div>
-            </div>
-            <div className="product-card">
-              <img src="/images/default-product.jpg" alt="Respiratory System Medicines" />
-              <div className="product-info">
-                <h3>Respiratory System Medicines</h3>
-                <p>High-quality products for healthcare professionals.</p>
-                <Link href="/products" className="btn btn-outline">Learn More</Link>
-              </div>
-            </div>
-            <div className="product-card">
-              <img src="/images/default-product.jpg" alt="Medical Supplies & Equipment" />
-              <div className="product-info">
-                <h3>Medical Supplies & Equipment</h3>
-                <p>High-quality products for healthcare professionals.</p>
-                <Link href="/products" className="btn btn-outline">Learn More</Link>
-              </div>
-            </div>
+          {/* عنوان القسم محاط بإطار أخضر أنيق ومتناسق */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span style={{ 
+              fontSize: '1.8rem', 
+              color: '#0A6E79', 
+              fontWeight: '700', 
+              backgroundColor: '#e6f4f6', 
+              border: '2px solid #0A6E79', 
+              padding: '10px 30px', 
+              borderRadius: '30px', 
+              display: 'inline-block',
+              boxShadow: '0 4px 12px rgba(10, 110, 121, 0.1)'
+            }}>
+              Our Featured Products
+            </span>
           </div>
+          
+          {featuredProducts.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>No featured products available at the moment.</p>
+          ) : (
+            <div className="products-grid">
+              {featuredProducts.map((product: any, index: number) => (
+                <div className="product-card" key={product.id || index}>
+                  <img 
+                    src={product.image_url || "/images/default-product.jpg"} 
+                    alt={product.name} 
+                    style={{ objectFit: 'contain', background: '#f8fafc', padding: '10px' }} 
+                  />
+                  <div className="product-info">
+                    {product.category && (
+                      <div style={{ marginBottom: '10px' }}>
+                        <span style={{ 
+                          fontSize: '0.85rem', 
+                          color: '#0A6E79', 
+                          fontWeight: '600', 
+                          backgroundColor: '#e6f4f6', 
+                          border: '1px solid #0A6E79', 
+                          padding: '4px 12px', 
+                          borderRadius: '20px', 
+                          display: 'inline-block' 
+                        }}>
+                          {product.category}
+                        </span>
+                      </div>
+                    )}
+
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '10px', color: '#222' }}>
+                      {product.name}
+                    </h3>
+                    
+                    {product.description && product.description.trim() !== "" && (
+                      <p style={{ fontSize: '0.95rem', color: '#555', marginBottom: '15px' }}>
+                        {product.description}
+                      </p>
+                    )}
+
+                    <Link href="/products" className="btn btn-outline" style={{ marginTop: '10px' }}>Learn More</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Stats Section - من قاعدة البيانات */}
+      {/* Stats Section */}
       <section className="stats">
         <div className="container">
           <h2 className="section-titlee">{siteData.home.statistics.sectionTitle}</h2>
@@ -176,68 +249,13 @@ export default async function HomePage() {
             {siteData.home.statistics.stats.map((stat: any, index: number) => (
               <div key={index} className="stat-item">
                 <div className="stat-number">{stat.number}</div>
-                <div className="stat-label">{stat.label}</div>
+                <div className="stat_label">{stat.label}</div>
                 <p className="stat-description">{stat.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div className="footer-section">
-              {siteData.home.logo ? (
-                <img 
-                  src={siteData.home.logo} 
-                  alt={siteData.home.companyName} 
-                  className="h-12 w-auto object-contain mb-2"
-                />
-              ) : (
-                <h3>{siteData.home.companyName}</h3>
-              )}
-              <p>{siteData.home.companySubtitle}</p>
-              <p>{siteData.contact.address}</p>
-              <div className="social-links">
-                <a href="#"><i className="fab fa-facebook"></i></a>
-                <a href="#"><i className="fab fa-twitter"></i></a>
-                <a href="#"><i className="fab fa-instagram"></i></a>
-                <a href="#"><i className="fab fa-linkedin"></i></a>
-              </div>
-            </div>
-            <div className="footer-section">
-              <h4>Quick Links</h4>
-              <ul>
-                <li><Link href="/">Home</Link></li>
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/products">Products</Link></li>
-                <li><Link href="/services">Services</Link></li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Contact Information</h4>
-              <ul>
-                <li><i className="fas fa-phone"></i> {siteData.contact.phone}</li>
-                <li><i className="fas fa-envelope"></i> {siteData.contact.email}</li>
-                <li><i className="fas fa-map-marker-alt"></i> {siteData.contact.address}</li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h4>Working Hours</h4>
-              <ul>
-                <li>Saturday - Thursday: 8:00 AM - 6:00 PM</li>
-                <li>Friday: Closed</li>
-                <li>Emergency Service: 24/7</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>&copy; 2025 {siteData.home.companyName} {siteData.home.companySubtitle}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
