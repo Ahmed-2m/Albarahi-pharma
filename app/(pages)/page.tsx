@@ -21,11 +21,12 @@ export default async function HomePage() {
     .eq('is_active', true)
     .order('order', { ascending: true })
 
-  // 4. جلب خدمات لوحة التحكم
+  // 4. جلب 4 خدمات فقط من لوحة التحكم مرتبة حسب الترتيب
   const { data: serviceCards, error: servicesError } = await supabase
     .from('service_cards')
     .select('*')
     .order('sort_order', { ascending: true })
+    .limit(3)
 
   if (servicesError) {
     console.error("Error fetching service cards:", servicesError)
@@ -99,7 +100,6 @@ export default async function HomePage() {
             </div>
           </div>
           
-          {/* --- تعديل: قمنا بتحديد الـ div الذي يحتوي على الصورة وإعطائه كلاس تفاعلي --- */}
           <div className="hero-image hero-image-interactive">
             <img src={siteData.home.heroImage} alt="Modern pharmaceutical laboratory" />
           </div>
@@ -175,7 +175,6 @@ export default async function HomePage() {
       {/* Products Preview (Featured Products) */}
       <section className="products-preview">
         <div className="container">
-          {/* عنوان القسم محاط بإطار أخضر أنيق ومتناسق */}
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <span style={{ 
               fontSize: '1.8rem', 

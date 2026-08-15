@@ -16,9 +16,13 @@ export default function ProductsPage() {
     subtitle: "Explore our wide range of pharmaceutical and medical products"
   })
 
+  // حالة لتخزين عناصر ضمان الجودة القادمة من جدول quality_items
+  const [qualityItems, setQualityItems] = useState<any[]>([])
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 1. جلب المنتجات
         const { data: products, error: productsError } = await supabase
           .from('products')
           .select('*')
@@ -26,6 +30,7 @@ export default function ProductsPage() {
 
         if (productsError) throw productsError
 
+        // 2. جلب عناوين صفحة المنتجات
         const { data: pageInfo, error: pageError } = await supabase
           .from('pages')
           .select('title, subtitle')
@@ -37,6 +42,17 @@ export default function ProductsPage() {
             title: pageInfo.title || "Our Products",
             subtitle: pageInfo.subtitle || "Explore our wide range of pharmaceutical and medical products"
           })
+        }
+
+        // 3. جلب عناصر ضمان الجودة من الجدول الصحيح quality_items
+        const { data: qualityData, error: qualityError } = await supabase
+          .from('quality_items')
+          .select('*')
+          .eq('is_active', true)
+          .order('order', { ascending: true })
+
+        if (!qualityError && qualityData) {
+          setQualityItems(qualityData)
         }
 
         const uniqueCategories = [...new Set(products?.map(p => p.category) || [])]
@@ -84,17 +100,15 @@ export default function ProductsPage() {
     }
   }
 
-  // دالة لجلب الوصف بدقة مع احترام عملية الحذف والتفريغ
   const getCategoryDescription = (categoryName: string) => {
     const catProducts = allProducts.filter(p => p.category === categoryName);
     const baseItem = catProducts.find(p => p.name?.startsWith("عنصر أساسي -") || p.description);
     
-    // إذا وجدنا وصفاً حقيقياً ومكتوباً في قاعدة البيانات نقوم بإرجاعه، وإلا نجعله فارغاً تماماً
     if (baseItem && baseItem.description && baseItem.description.trim() !== "" && baseItem.description !== "وصف الفئة") {
       return baseItem.description;
     }
     
-    return ""; // إرجاع نص فارغ لكي يختفي الوصف تماماً عند حذفه
+    return "";
   };
 
   const groupedProducts = getCategoryProducts()
@@ -216,7 +230,7 @@ export default function ProductsPage() {
                         </h3>
                       </div>
                       
-                      {/* وصف الفئة (يظهر فقط إذا كان موجوداً ولم يتم حذفه) */}
+                      {/* وصف الفئة */}
                       {categoryDescription && (
                         <p style={{ color: '#64748b', marginBottom: '15px', fontSize: '0.85rem' }}>
                           {categoryDescription}
@@ -337,65 +351,98 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Quality Assurance */}
+      {/* Quality Assurance (Dynamic from quality_items table) */}
       <section className="quality-section" style={{ padding: '80px 0', background: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h2 className="section-title" style={{ textAlign: 'center', fontSize: '2.5rem', color: '#2C3E50', marginBottom: '50px' }}>
-            Quality Assurance
-          </h2>
+          
+          {/* عنوان Quality Assurance بخلفية خضراء متناسقة وأنيقة */}
+          <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+            <span style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #0A6E79 0%, #0d8390 100%)',
+              color: '#ffffff',
+              padding: '12px 35px',
+              borderRadius: '50px',
+              fontSize: '2.2rem',
+              fontWeight: '700',
+              boxShadow: '0 6px 20px rgba(10, 110, 121, 0.25)',
+              letterSpacing: '0.5px'
+            }}>
+              Quality Assurance
+            </span>
+          </div>
+
           <div className="quality-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '30px'
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '20px',
+            justifyContent: 'center',
+            width: '100%'
           }}>
-            <div className="quality-item" style={{
-              background: '#f8fafc',
-              padding: '30px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
-            }}>
-              <i className="fas fa-microscope" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
-              <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Laboratory Testing</h3>
-              <p style={{ color: '#64748b' }}>Every product undergoes rigorous laboratory testing to ensure purity, potency, and safety before distribution.</p>
-            </div>
-            <div className="quality-item" style={{
-              background: '#f8fafc',
-              padding: '30px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
-            }}>
-              <i className="fas fa-shield-alt" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
-              <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Authenticity Guarantee</h3>
-              <p style={{ color: '#64748b' }}>We guarantee 100% authentic products sourced directly from authorized manufacturers and distributors.</p>
-            </div>
-            <div className="quality-item" style={{
-              background: '#f8fafc',
-              padding: '30px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
-            }}>
-              <i className="fas fa-thermometer-half" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
-              <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Proper Storage</h3>
-              <p style={{ color: '#64748b' }}>Temperature-controlled storage facilities ensure medications maintain their efficacy throughout the supply chain.</p>
-            </div>
-            <div className="quality-item" style={{
-              background: '#f8fafc',
-              padding: '30px',
-              borderRadius: '12px',
-              textAlign: 'center',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
-            }}>
-              <i className="fas fa-certificate" style={{ fontSize: '2.5rem', color: '#0A6E79', marginBottom: '15px' }}></i>
-              <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>Regulatory Compliance</h3>
-              <p style={{ color: '#64748b' }}>All products comply with local and international pharmaceutical regulations and quality standards.</p>
-            </div>
+            {qualityItems.map((item, index) => (
+              <div key={index} className="quality-item" style={{
+                background: '#f8fafc',
+                padding: '35px 25px',
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                flex: '1 1 240px',
+                maxWidth: '320px',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(10, 110, 121, 0.1)';
+                e.currentTarget.style.borderColor = '#0A6E79';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+              }}
+              >
+                <div>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '70px',
+                    height: '70px',
+                    borderRadius: '50%',
+                    background: 'rgba(10, 110, 121, 0.1)',
+                    color: '#0A6E79',
+                    marginBottom: '20px'
+                  }}>
+                    <i className={item.icon || "fas fa-check-circle"} style={{ fontSize: '2rem' }}></i>
+                  </div>
+                  
+                  {/* عنوان الكرت كبير وغامق */}
+                  <h3 style={{ 
+                    color: '#1e293b', 
+                    marginBottom: '12px', 
+                    fontSize: '1.25rem', 
+                    fontWeight: '700',
+                    letterSpacing: '0.3px'
+                  }}>
+                    {item.title}
+                  </h3>
+                  
+                  {/* وصف مرتب وواضح */}
+                  <p style={{ 
+                    color: '#64748b', 
+                    fontSize: '0.95rem', 
+                    lineHeight: '1.6',
+                    margin: 0
+                  }}>
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

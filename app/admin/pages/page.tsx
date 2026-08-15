@@ -26,6 +26,7 @@ interface TimelineItem {
 }
 
 interface AboutContent {
+  id?: string;
   story?: string;
   mission?: string;
   vision?: string;
@@ -52,7 +53,7 @@ export default function AdminPages() {
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form State
+  // Form State for regular pages
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -60,8 +61,9 @@ export default function AdminPages() {
     image_url: "",
   });
 
-  // Dedicated State for About Page Details
+  // Dedicated State for About Page Details from the new table
   const [aboutData, setAboutData] = useState<AboutContent>({
+    id: "",
     story: "",
     mission: "",
     vision: "",
@@ -80,7 +82,6 @@ export default function AdminPages() {
 
       if (error) throw error;
       
-      // ترتيب مخصص حسب الطلب: home, about, products, services, contact
       const customOrder = ["home", "about", "products", "services", "contact"];
       const sortedData = (data || []).sort((a, b) => {
         const indexA = customOrder.indexOf(a.slug);
@@ -100,7 +101,31 @@ export default function AdminPages() {
     }
   };
 
-  const handleEdit = (page: PageData) => {
+  // Fetch About Us dedicated table data
+  const fetchAboutData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("about_us")
+        .select("*")
+        .single();
+
+      if (error && error.code !== "PGRST116") throw error;
+
+      if (data) {
+        setAboutData({
+          id: data.id,
+          story: data.story || "",
+          mission: data.mission || "",
+          vision: data.vision || "",
+          timeline: Array.isArray(data.timeline) ? data.timeline : [],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching about_us data:", error);
+    }
+  };
+
+  const handleEdit = async (page: PageData) => {
     setEditingId(page.id);
     setEditingSlug(page.slug);
 
@@ -111,62 +136,56 @@ export default function AdminPages() {
       image_url: page.image_url || "",
     });
 
-    // If editing About page, parse JSON from content column
+    // If editing About page, fetch data from the new 'about_us' table
     if (page.slug === "about") {
-      try {
-        if (page.content && page.content.trim().startsWith("{")) {
-          const parsed = JSON.parse(page.content);
-          setAboutData({
-            story: parsed.story || "",
-            mission: parsed.mission || "",
-            vision: parsed.vision || "",
-            timeline: Array.isArray(parsed.timeline) ? parsed.timeline : [],
-          });
-        } else {
-          setAboutData({
-            story: page.content || "",
-            mission: "",
-            vision: "",
-            timeline: [],
-          });
-        }
-      } catch {
-        setAboutData({
-          story: page.content || "",
-          mission: "",
-          vision: "",
-          timeline: [],
-        });
-      }
+      await fetchAboutData();
     }
   };
 
   const handleSave = async (id: string) => {
     setSavingId(id);
     try {
-      let finalContent = formData.content;
-
-      // Pack About data into JSON if page is 'about'
+      // 1. If page is 'about', save details into the dedicated 'about_us' table
       if (editingSlug === "about") {
-        finalContent = JSON.stringify(aboutData);
+        const aboutPayload = {
+          story: aboutData.story,
+          mission: aboutData.mission,
+          vision: aboutData.vision,
+          timeline: aboutData.timeline,
+        };
+
+        if (aboutData.id) {
+          const { error: aboutError } = await supabase
+            .from("about_us")
+            .update(aboutPayload)
+            .eq("id", aboutData.id);
+          if (aboutError) throw aboutError;
+        } else {
+          const { error: aboutError } = await supabase
+            .from("about_us")
+            .insert([aboutPayload]);
+          if (aboutError) throw aboutError;
+        }
       }
 
+      // 2. Save general page info into 'pages' table
       const updatePayload: any = {
         subtitle: formData.subtitle,
       };
 
-      // If page is NOT home, include title
       if (editingSlug !== "home") {
         updatePayload.title = formData.title;
       }
 
-      // If page is neither contact, products, nor services, include content and image_url
-      if (editingSlug !== "contact" && editingSlug !== "products" && editingSlug !== "services") {
-        updatePayload.content = finalContent;
+      if (editingSlug !== "contact" && editingSlug !== "products" && editingSlug !== "services" && editingSlug !== "about") {
+        updatePayload.content = formData.content;
+        updatePayload.image_url = formData.image_url;
+      } else if (editingSlug === "about") {
+        // Keep image_url editable for about page if needed in 'pages' table
         updatePayload.image_url = formData.image_url;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("pages")
         .update(updatePayload)
         .eq("id", id)
@@ -363,7 +382,7 @@ export default function AdminPages() {
                     </div>
                   </div>
 
-                  {/* Main Title & Subtitle (Title hidden if page is 'home') */}
+                  {/* Main Title & Subtitle */}
                   <div className={`grid grid-cols-1 ${page.slug === "home" ? "grid-cols-1" : "md:grid-cols-2"} gap-4`}>
                     {page.slug !== "home" && (
                       <div>
@@ -392,7 +411,7 @@ export default function AdminPages() {
                     </div>
                   </div>
 
-                  {/* CUSTOM EDITING FOR ABOUT PAGE */}
+                  {/* CUSTOM EDITING FOR ABOUT PAGE (Connected to about_us table) */}
                   {page.slug === "about" ? (
                     <div className="space-y-4 pt-2 border-t border-slate-100">
                       <div>
@@ -502,10 +521,8 @@ export default function AdminPages() {
                       </div>
                     </div>
                   ) : page.slug === "contact" || page.slug === "products" || page.slug === "services" ? (
-                    // IF CONTACT, PRODUCTS, OR SERVICES PAGE: HIDE CONTENT & IMAGE FIELDS COMPLETELY
                     null
                   ) : (
-                    /* NORMAL EDITING FOR OTHER PAGES */
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1.5">
                         المحتوى والنص التفصيلي للصفحة
@@ -520,7 +537,7 @@ export default function AdminPages() {
                     </div>
                   )}
 
-                  {/* Image Field (Hidden for Contact, Products, & Services Pages) */}
+                  {/* Image Field */}
                   {page.slug !== "contact" && page.slug !== "products" && page.slug !== "services" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -617,7 +634,7 @@ export default function AdminPages() {
                       <p className="text-xs font-bold text-amber-700">{page.subtitle}</p>
                     )}
 
-                    {page.slug !== "contact" && page.slug !== "products" && page.slug !== "services" && (
+                    {page.slug !== "contact" && page.slug !== "products" && page.slug !== "services" && page.slug !== "about" && (
                       page.content ? (
                         <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 bg-slate-50/70 p-3 rounded-2xl border border-slate-100">
                           {page.content}

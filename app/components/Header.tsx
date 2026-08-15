@@ -1,5 +1,8 @@
 // components/Header.tsx
+'use client';
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface HeaderProps {
   companyName: string
@@ -8,6 +11,11 @@ interface HeaderProps {
 }
 
 export default function Header({ companyName, companySubtitle, logo }: HeaderProps) {
+  const pathname = usePathname();
+
+  // دالة مساعدة لتحديد ما إذا كان الرابط هو الصفحة الحالية
+  const isActive = (path: string) => pathname === path;
+
   return (
     <header className="header">
       <nav className="navbar">
@@ -25,7 +33,6 @@ export default function Header({ companyName, companySubtitle, logo }: HeaderPro
               </div>
             )}
             
-            {/* أضفنا gap-1.5 مع leading-none لإنشاء مسافة ثابتة ومريحة بين الجملتين */}
             <div className="flex flex-col justify-center gap-1.5">
               <h2 className="text-sm font-extrabold !m-0 !p-0 leading-none text-slate-900">
                 {companyName}
@@ -40,19 +47,49 @@ export default function Header({ companyName, companySubtitle, logo }: HeaderPro
 
           <ul className="nav-menu">
             <li className="nav-item">
-              <Link href="/" className="nav-link">Home</Link>
+              <Link 
+                href="/" 
+                className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                style={{ color: isActive('/') ? '#0A6E79' : undefined, fontWeight: isActive('/') ? 'bold' : undefined }}
+              >
+                Home
+              </Link>
             </li>
             <li className="nav-item">
-              <Link href="/about" className="nav-link">About Us</Link>
+              <Link 
+                href="/about" 
+                className={`nav-link ${isActive('/about') ? 'active' : ''}`}
+                style={{ color: isActive('/about') ? '#0A6E79' : undefined, fontWeight: isActive('/about') ? 'bold' : undefined }}
+              >
+                About Us
+              </Link>
             </li>
             <li className="nav-item">
-              <Link href="/products" className="nav-link">Products</Link>
+              <Link 
+                href="/products" 
+                className={`nav-link ${isActive('/products') ? 'active' : ''}`}
+                style={{ color: isActive('/products') ? '#0A6E79' : undefined, fontWeight: isActive('/products') ? 'bold' : undefined }}
+              >
+                Products
+              </Link>
             </li>
             <li className="nav-item">
-              <Link href="/services" className="nav-link">Services</Link>
+              <Link 
+                href="/services" 
+                className={`nav-link ${isActive('/services') ? 'active' : ''}`}
+                style={{ color: isActive('/services') ? '#0A6E79' : undefined, fontWeight: isActive('/services') ? 'bold' : undefined }}
+              >
+                Services
+              </Link>
             </li>
             <li className="nav-item">
-              <Link href="/contact" className="nav-link">Contact</Link>
+              <Link 
+                href="/contact" 
+                className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
+                style={{ color: isActive('/contact') ? '#0A6E79' : undefined, fontWeight: isActive('/contact') ? 'bold' : undefined }}
+              >
+                Contact
+              </Link>
             </li>
           </ul>
 

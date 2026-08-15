@@ -39,7 +39,7 @@ export default function ServicesPage() {
 
         if (serviceCardsError) throw serviceCardsError
 
-        // 4. جلب خطوات العملية
+        // 4. جلب خطوات العملية من جدول process_steps
         const { data: processSteps, error: processStepsError } = await supabase
           .from('process_steps')
           .select('*')
@@ -47,7 +47,7 @@ export default function ServicesPage() {
 
         if (processStepsError) throw processStepsError
 
-        // 5. بناء البيانات من قاعدة البيانات فقط
+        // 5. بناء البيانات من قاعدة البيانات
         setSiteData({
           home: {
             companyName: getSetting('company_name') || "Sadiq Al-Barhi",
@@ -195,43 +195,75 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Service Process */}
+      {/* Service Process (Dynamic from process_steps table) */}
       <section className="service-process" style={{ padding: '80px 0', background: '#f8f9fa' }}>
         <div className="container">
-          <h2 className="section-title" style={{ textAlign: 'center', fontSize: '2.5rem', color: '#2C3E50', marginBottom: '50px' }}>
-            {siteData.services.processSection?.title || "How We Serve You"}
-          </h2>
+          {/* عنوان القسم بخلفية خضراء متناسقة وبارزة */}
+          <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+            <span style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+              color: 'white',
+              padding: '12px 30px',
+              borderRadius: '50px',
+              fontSize: '2rem',
+              fontWeight: '800',
+              boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
+              letterSpacing: '0.5px'
+            }}>
+              {siteData.services.processSection?.title || "How We Serve You"}
+            </span>
+          </div>
+
           <div className="process-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
             gap: '30px'
           }}>
             {siteData.services.processSection?.steps && siteData.services.processSection.steps.length > 0 ? (
               siteData.services.processSection.steps.map((step: any, index: number) => (
                 <div key={index} className="process-step" style={{
                   background: 'white',
-                  padding: '30px',
-                  borderRadius: '10px',
+                  padding: '35px 25px',
+                  borderRadius: '12px',
                   textAlign: 'center',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.06)',
+                  border: '1px solid rgba(10, 110, 121, 0.08)',
+                  transition: 'transform 0.3s ease'
                 }}>
                   <div className="step-number" style={{
-                    width: '50px',
-                    height: '50px',
+                    width: '55px',
+                    height: '55px',
                     background: '#0A6E79',
                     color: 'white',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    margin: '0 auto 15px',
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold'
+                    margin: '0 auto 20px',
+                    fontSize: '1.3rem',
+                    boxShadow: '0 4px 10px rgba(10, 110, 121, 0.25)'
                   }}>
-                    {step.step_number || (index + 1)}
+                    {step.icon ? <i className={step.icon}></i> : (step.step_number || (index + 1))}
                   </div>
-                  <h3 style={{ color: '#2C3E50', marginBottom: '10px' }}>{step.title || "Step Title"}</h3>
-                  <p style={{ color: '#666' }}>{step.description || "Step description"}</p>
+                  {/* عنوان الخطوة: حجم أكبر، غامق، وواضح */}
+                  <h3 style={{ 
+                    color: '#1E293B', 
+                    fontSize: '1.25rem', 
+                    fontWeight: '700', 
+                    marginBottom: '12px' 
+                  }}>
+                    {step.title || "Step Title"}
+                  </h3>
+                  {/* وصف الخطوة: مرتب بخط مريح وواضح */}
+                  <p style={{ 
+                    color: '#64748B', 
+                    fontSize: '0.95rem', 
+                    lineHeight: '1.7', 
+                    margin: 0 
+                  }}>
+                    {step.description || "Step description"}
+                  </p>
                 </div>
               ))
             ) : (

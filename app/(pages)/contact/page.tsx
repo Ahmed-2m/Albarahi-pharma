@@ -7,6 +7,64 @@ import { useEffect, useState } from 'react'
 export default function ContactPage() {
   const [siteData, setSiteData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // حالة حقول نموذج التواصل الجديدة
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    department: 'general', // القسم المستهدف
+    subject: '',
+    message: ''
+  });
+  
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            department: formData.department,
+            subject: formData.subject,
+            message: formData.message,
+            created_at: new Date().toISOString()
+          }
+        ]);
+
+      if (error) throw error;
+
+      setSubmitSuccess(true);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        department: 'general',
+        subject: '',
+        message: ''
+      });
+    } catch (err: any) {
+      console.error('Error sending message:', err);
+      setSubmitError('حدث خطأ أثناء إرسال الرسالة، يجدر المحاولة مرة أخرى.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +97,7 @@ export default function ContactPage() {
 
         if (branchesError) throw branchesError
 
-        // 4. بناء البيانات من قاعدة البيانات فقط
+        // 4. بناء البيانات من قاعدة البيانات وإضافة حقول معلومات التواصل الجديدة
         setSiteData({
           home: {
             companyName: getSetting('company_name') || "Sadiq Al-Barhi",
@@ -49,6 +107,9 @@ export default function ContactPage() {
           contact: {
             pageTitle: contactData?.title || "Contact Us",
             pageDescription: contactData?.subtitle || "We are here to serve you and answer all your inquiries",
+            contactInfoTitle: getSetting('contact_info_title') || "Contact Information",
+            contactInfoDescription: getSetting('contact_info_description') || "Get in touch with us through any of the following methods, and we'll be happy to serve you",
+            
             phone: getSetting('phone') || "+967 1 234567",
             phone2: getSetting('phone2') || "+967 777 123456",
             email: getSetting('email') || "info@sadiqalbarhi.com",
@@ -65,7 +126,6 @@ export default function ContactPage() {
         })
       } catch (error) {
         console.error('Error fetching data:', error)
-        // بيانات فارغة في حالة الخطأ
         setSiteData({
           home: {
             companyName: "Sadiq Al-Barhi",
@@ -75,6 +135,8 @@ export default function ContactPage() {
           contact: {
             pageTitle: "Contact Us",
             pageDescription: "We are here to serve you and answer all your inquiries",
+            contactInfoTitle: "Contact Information",
+            contactInfoDescription: "Get in touch with us through any of the following methods, and we'll be happy to serve you",
             phone: "+967 1 234567",
             phone2: "+967 777 123456",
             email: "info@sadiqalbarhi.com",
@@ -135,8 +197,25 @@ export default function ContactPage() {
               borderRadius: '10px',
               boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
             }}>
-              <h2 style={{ color: '#0A6E79', marginBottom: '1rem', fontSize: '1.5rem' }}>Contact Information</h2>
-              <p style={{ color: '#666', marginBottom: '2rem', lineHeight: '1.6' }}>Get in touch with us through any of the following methods, and we'll be happy to serve you</p>
+              {/* عنوان القسم بالتنسيق الجديد المطلوب */}
+              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <span style={{
+                  display: 'inline-block',
+                  background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+                  color: 'white',
+                  padding: '10px 25px',
+                  borderRadius: '50px',
+                  fontSize: '1.6rem',
+                  fontWeight: '800',
+                  boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
+                  letterSpacing: '0.5px'
+                }}>
+                  {siteData.contact.contactInfoTitle}
+                </span>
+                <p style={{ margin: '15px 0 0 0', fontSize: '0.95rem', color: '#666', lineHeight: '1.5' }}>
+                  {siteData.contact.contactInfoDescription}
+                </p>
+              </div>
               
               <div className="contact-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', padding: '0.5rem 0' }}>
                 <i className="fas fa-phone" style={{ color: '#0A6E79', width: '20px', marginRight: '1rem', fontSize: '1.1rem' }}></i>
@@ -176,46 +255,86 @@ export default function ContactPage() {
               borderRadius: '10px',
               boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
             }}>
-              <h2 style={{ color: '#0A6E79', marginBottom: '1rem', fontSize: '1.5rem' }}>{siteData.contact.formTitle}</h2>
-              <p style={{ color: '#666', marginBottom: '1.5rem', lineHeight: '1.6' }}>{siteData.contact.formDescription}</p>
+              {/* عنوان القسم بالتنسيق الجديد المطلوب */}
+              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <span style={{
+                  display: 'inline-block',
+                  background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+                  color: 'white',
+                  padding: '10px 25px',
+                  borderRadius: '50px',
+                  fontSize: '1.6rem',
+                  fontWeight: '800',
+                  boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
+                  letterSpacing: '0.5px'
+                }}>
+                  {siteData.contact.formTitle}
+                </span>
+                <p style={{ margin: '15px 0 0 0', fontSize: '0.95rem', color: '#666', lineHeight: '1.5' }}>
+                  {siteData.contact.formDescription}
+                </p>
+              </div>
               
-              <form>
+              {submitSuccess && (
+                <div style={{ background: '#d4edda', color: '#155724', padding: '10px', borderRadius: '5px', marginBottom: '1rem' }}>
+                  تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.
+                </div>
+              )}
+
+              {submitError && (
+                <div style={{ background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px', marginBottom: '1rem' }}>
+                  {submitError}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Full Name *</label>
-                  <input type="text" id="name" name="name" required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Email Address *</label>
-                  <input type="email" id="email" name="email" required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="phone" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Phone Number</label>
-                  <input type="tel" id="phone" name="phone" style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label htmlFor="department" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Target Department *</label>
+                  <select id="department" name="department" value={formData.department} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', background: 'white' }}>
+                    <option value="general">General Inquiry</option>
+                    <option value="sales">Sales & Pharmaceuticals</option>
+                    <option value="medical">Medical Supplies</option>
+                    <option value="support">Customer Support</option>
+                  </select>
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="subject" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Subject *</label>
-                  <input type="text" id="subject" name="subject" required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="message" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Message *</label>
-                  <textarea id="message" name="message" required placeholder="Please write your message here..." style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', height: '120px', resize: 'vertical' }}></textarea>
+                  <textarea id="message" name="message" value={formData.message} onChange={handleChange} required placeholder="Please write your message here..." style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', height: '120px', resize: 'vertical' }}></textarea>
                 </div>
                 
-                <button type="submit" className="btn-submit" style={{
+                <button type="submit" disabled={submitting} className="btn-submit" style={{
                   background: '#0A6E79',
                   color: 'white',
                   padding: '0.75rem 2rem',
                   border: 'none',
                   borderRadius: '5px',
                   fontSize: '1rem',
-                  cursor: 'pointer',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  opacity: submitting ? 0.7 : 1,
                   transition: 'background 0.3s'
                 }}>
-                  Send Message
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -226,7 +345,23 @@ export default function ContactPage() {
       {/* Branches Section */}
       <section className="branches-section" style={{ padding: '3rem 0', background: 'white' }}>
         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h2 style={{ textAlign: 'center', color: '#0A6E79', marginBottom: '3rem', fontSize: '2rem' }}>Our Branches</h2>
+          {/* عنوان القسم بالتنسيق الجديد المطلوب */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+              color: 'white',
+              padding: '12px 30px',
+              borderRadius: '50px',
+              fontSize: '2rem',
+              fontWeight: '800',
+              boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
+              letterSpacing: '0.5px'
+            }}>
+              Our Branches
+            </span>
+          </div>
+
           <div className="branches-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
