@@ -16,7 +16,7 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
       overflow: 'hidden',
       boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
       position: 'relative',
-      backgroundColor: '#f8f9fa', // لون خلفية يظهر إذا كانت الصورة أصغر من الحاوية
+      backgroundColor: '#f8f9fa',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
@@ -29,8 +29,8 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
         style={{ 
           width: '100%', 
           height: '100%', 
-          objectFit: 'contain', // عرض الصورة كاملة بدون قص
-          padding: '15px', // مسافة بسيطة لتبدو الصورة مؤطرة
+          objectFit: 'contain',
+          padding: '15px',
           display: 'block',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
           transition: 'transform 0.5s ease-in-out'
@@ -73,7 +73,7 @@ export default function AboutPage() {
   const siteData = {
     about: {
       pageTitle: aboutData?.title || "",
-      pageDescription: aboutData?.subtitle || "",
+      pageDescription: aboutData?.subtitle || "Learn about our journey, mission, and commitment to healthcare excellence",
       story: aboutUsData?.story || "",
       mission: aboutUsData?.mission || "",
       vision: aboutUsData?.vision || "",
@@ -94,8 +94,31 @@ export default function AboutPage() {
     boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)'
   };
 
+  const descriptionText = siteData.about.pageDescription || "Learn about our journey, mission, and commitment to healthcare excellence";
+  const words = descriptionText.split(" ");
+
   return (
-    <div>
+    <div dir="ltr" style={{ textAlign: 'left' }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes cloudFadeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            filter: blur(5px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+          }
+        }
+        .cloud-word {
+          display: inline-block;
+          opacity: 0;
+          animation: cloudFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
+
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
         color: 'white',
@@ -103,9 +126,37 @@ export default function AboutPage() {
         textAlign: 'center'
       }}>
         <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>{siteData.about.pageTitle}</h1>
-          <p style={{ fontSize: '1.2rem', opacity: 0.9, maxWidth: '700px', margin: '0 auto' }}>
-            {siteData.about.pageDescription}
+          <h1 style={{ 
+            fontSize: '3rem', 
+            marginBottom: '20px', 
+            fontWeight: '800',
+            letterSpacing: '1px',
+            textShadow: '0 2px 10px rgba(0,0,0,0.15)'
+          }}>
+            {siteData.about.pageTitle}
+          </h1>
+          <p style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '500',
+            opacity: 0.95, 
+            maxWidth: '750px', 
+            margin: '0 auto',
+            lineHeight: '1.6',
+            wordSpacing: '2px',
+            textAlign: 'center'
+          }}>
+            {words.map((word: string, i: number) => (
+              <span 
+                key={i} 
+                className="cloud-word" 
+                style={{ 
+                  animationDelay: `${i * 0.08}s`,
+                  marginRight: '6px'
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </p>
         </div>
       </section>

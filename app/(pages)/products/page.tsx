@@ -115,29 +115,80 @@ export default function ProductsPage() {
   const categoryNames = Object.keys(groupedProducts)
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading products...</div>
+    return <div style={{ textAlign: 'center', padding: '100px' }}>Loading...</div>
   }
 
+  const descriptionText = pageData.subtitle || "Explore our wide range of pharmaceutical and medical products";
+  const words = descriptionText.split(" ");
+
   return (
-    <div style={{ background: '#f4f6f8', minHeight: '100vh' }}>
-      {/* Page Header */}
+    <div dir="ltr" style={{ textAlign: 'left', background: '#f4f6f8', minHeight: '100vh' }}>
+      {/* Page Header matching About Page style */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes cloudFadeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            filter: blur(5px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+          }
+        }
+        .cloud-word {
+          display: inline-block;
+          opacity: 0;
+          animation: cloudFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
+
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
         color: 'white',
         padding: '120px 0 60px',
         textAlign: 'center'
       }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>{pageData.title}</h1>
-          <p style={{ fontSize: '1.2rem', opacity: 0.9, maxWidth: '700px', margin: '0 auto' }}>
-            {pageData.subtitle}
+        <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
+          <h1 style={{ 
+            fontSize: '3rem', 
+            marginBottom: '20px', 
+            fontWeight: '800',
+            letterSpacing: '1px',
+            textShadow: '0 2px 10px rgba(0,0,0,0.15)'
+          }}>
+            {pageData.title}
+          </h1>
+          <p style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '500',
+            opacity: 0.95, 
+            maxWidth: '750px', 
+            margin: '0 auto',
+            lineHeight: '1.6',
+            wordSpacing: '2px',
+            textAlign: 'center'
+          }}>
+            {words.map((word: string, i: number) => (
+              <span 
+                key={i} 
+                className="cloud-word" 
+                style={{ 
+                  animationDelay: `${i * 0.08}s`,
+                  marginRight: '6px'
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </p>
         </div>
       </section>
 
       {/* Products Section */}
       <section className="products-section" style={{ padding: '60px 0' }}>
-        <div className="container" style={{ maxWidth: '1250px', margin: '0 auto', padding: '0 20px' }}>
+        <div className="container" style={{ width: '90%', maxWidth: '1250px', margin: '0 auto' }}>
           {/* Product Filters */}
           <div className="products-filter" style={{
             display: 'flex',
@@ -353,9 +404,8 @@ export default function ProductsPage() {
 
       {/* Quality Assurance (Dynamic from quality_items table) */}
       <section className="quality-section" style={{ padding: '80px 0', background: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+        <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
           
-          {/* عنوان Quality Assurance بخلفية خضراء متناسقة وأنيقة */}
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <span style={{
               display: 'inline-block',
@@ -420,7 +470,6 @@ export default function ProductsPage() {
                     <i className={item.icon || "fas fa-check-circle"} style={{ fontSize: '2rem' }}></i>
                   </div>
                   
-                  {/* عنوان الكرت كبير وغامق */}
                   <h3 style={{ 
                     color: '#1e293b', 
                     marginBottom: '12px', 
@@ -431,7 +480,6 @@ export default function ProductsPage() {
                     {item.title}
                   </h3>
                   
-                  {/* وصف مرتب وواضح */}
                   <p style={{ 
                     color: '#64748b', 
                     fontSize: '0.95rem', 

@@ -14,14 +14,14 @@ export default async function HomePage() {
     .from('settings')
     .select('*')
 
-  // 3. جلب الإحصائيات (Statistics)
+  // 3. جلب الإحصائيات (Statistics) من القاعدة
   const { data: statistics } = await supabase
     .from('statistics')
     .select('*')
     .eq('is_active', true)
     .order('order', { ascending: true })
 
-  // 4. جلب 4 خدمات فقط من لوحة التحكم مرتبة حسب الترتيب
+  // 4. جلب 3 خدمات فقط من لوحة التحكم مرتبة حسب الترتيب
   const { data: serviceCards, error: servicesError } = await supabase
     .from('service_cards')
     .select('*')
@@ -87,7 +87,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div>
+    <div dir="ltr" style={{ textAlign: 'left' }}>
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
@@ -106,10 +106,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* باقي أقسام الموقع */}
+      {/* Why Choose Us Section */}
       <section className="features">
         <div className="container">
-          {/* عنوان القسم محاط بإطار أخضر أنيق ومتناسق */}
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <span style={{ 
               fontSize: '1.8rem', 
@@ -135,13 +134,14 @@ export default async function HomePage() {
                   key={index} 
                   className="feature-card" 
                   style={{ 
-                    maxHeight: '280px',      
+                    maxHeight: '280px',     
                     overflowY: 'auto',        
                     scrollbarWidth: 'none',   
                     msOverflowStyle: 'none',  
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    textAlign: 'left'
                   }}
                 >
                   <style dangerouslySetInnerHTML={{ __html: `
@@ -196,7 +196,7 @@ export default async function HomePage() {
           ) : (
             <div className="products-grid">
               {featuredProducts.map((product: any, index: number) => (
-                <div className="product-card" key={product.id || index}>
+                <div className="product-card" key={product.id || index} style={{ textAlign: 'left' }}>
                   <img 
                     src={product.image_url || "/images/default-product.jpg"} 
                     alt={product.name} 
@@ -239,20 +239,63 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="stats">
+      {/* Stats Section (Fully Styled & Dynamic) */}
+      <section className="stats" style={{ padding: '60px 0', backgroundColor: '#f9fbfb' }}>
         <div className="container">
-          <h2 className="section-titlee">{siteData.home.statistics.sectionTitle}</h2>
-          <p className="section-description">{siteData.home.statistics.sectionDescription}</p>
-          <div className="stats-grid">
-            {siteData.home.statistics.stats.map((stat: any, index: number) => (
-              <div key={index} className="stat-item">
-                <div className="stat-number">{stat.number}</div>
-                <div className="stat_label">{stat.label}</div>
-                <p className="stat-description">{stat.description}</p>
-              </div>
-            ))}
+          <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+            <span style={{ 
+              fontSize: '1.8rem', 
+              color: '#0A6E79', 
+              fontWeight: '700', 
+              backgroundColor: '#e6f4f6', 
+              border: '2px solid #0A6E79', 
+              padding: '10px 30px', 
+              borderRadius: '30px', 
+              display: 'inline-block',
+              boxShadow: '0 4px 12px rgba(10, 110, 121, 0.1)'
+            }}>
+              {siteData.home.statistics.sectionTitle}
+            </span>
+            {siteData.home.statistics.sectionDescription && (
+              <p style={{ color: '#555', marginTop: '15px', fontSize: '1.1rem', fontWeight: '500' }}>
+                {siteData.home.statistics.sectionDescription}
+              </p>
+            )}
           </div>
+          
+          {siteData.home.statistics.stats.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>No statistics available at the moment.</p>
+          ) : (
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '30px' }}>
+              {siteData.home.statistics.stats.map((stat: any, index: number) => (
+                <div 
+                  key={stat.id || index} 
+                  className="stat-item" 
+                  style={{ 
+                    textAlign: 'center', 
+                    backgroundColor: '#ffffff', 
+                    padding: '30px 20px', 
+                    borderRadius: '16px', 
+                    border: '1px solid #e1e8eb',
+                    boxShadow: '0 6px 18px rgba(10, 110, 121, 0.05)',
+                    transition: 'transform 0.3s ease'
+                  }}
+                >
+                  <div className="stat-number" style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0A6E79', marginBottom: '10px' }}>
+                    {stat.number}
+                  </div>
+                  <div className="stat_label" style={{ fontSize: '1.1rem', fontWeight: '700', color: '#333', marginBottom: '8px' }}>
+                    {stat.label}
+                  </div>
+                  {stat.description && (
+                    <p className="stat-description" style={{ fontSize: '0.9rem', color: '#666', margin: 0 }}>
+                      {stat.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

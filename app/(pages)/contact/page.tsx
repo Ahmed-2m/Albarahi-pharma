@@ -8,12 +8,12 @@ export default function ContactPage() {
   const [siteData, setSiteData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // حالة حقول نموذج التواصل الجديدة
+  // حالة حقول نموذج التواصل
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    department: 'general', // القسم المستهدف
+    department: 'general',
     subject: '',
     message: ''
   });
@@ -78,7 +78,7 @@ export default function ContactPage() {
 
         if (contactError) throw contactError
 
-        // 2. جلب الإعدادات
+        // 2. جلب الإعدادات (تشمل بيانات الطوارئ ومعلومات التواصل)
         const { data: settingsData, error: settingsError } = await supabase
           .from('settings')
           .select('*')
@@ -97,7 +97,7 @@ export default function ContactPage() {
 
         if (branchesError) throw branchesError
 
-        // 4. بناء البيانات من قاعدة البيانات وإضافة حقول معلومات التواصل الجديدة
+        // 4. بناء هيكل البيانات الموحد
         setSiteData({
           home: {
             companyName: getSetting('company_name') || "Sadiq Al-Barhi",
@@ -116,9 +116,12 @@ export default function ContactPage() {
             email2: getSetting('email2') || "sales@sadiqalbarhi.com",
             address: getSetting('address') || "Al-Zubairi Street, Sana'a, Yemen",
             workingHours: getSetting('working_hours') || "Saturday - Thursday: 8:00 AM - 6:00 PM",
+            
+            // بيانات الطوارئ من قاعدة البيانات (Settings)
             emergencyPhone: getSetting('emergency_phone') || "+967 777 999 888",
             emergencyTitle: getSetting('emergency_title') || "Emergency Service",
             emergencyDescription: getSetting('emergency_description') || "Available 24 hours daily for emergency medical needs",
+
             formTitle: getSetting('form_title') || "Send Us a Message",
             formDescription: getSetting('form_description') || "Get in touch with us and we'll respond as soon as possible"
           },
@@ -159,31 +162,90 @@ export default function ContactPage() {
     fetchData()
   }, [])
 
-  if (isLoading || !siteData) {
+  if (isLoading || !siteData || !siteData.contact) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
   }
 
+  const descriptionText = siteData.contact.pageDescription || "We are here to serve you and answer all your inquiries";
+  const words = descriptionText.split(" ");
+
   return (
-    <div>
+    <div dir="ltr" style={{ textAlign: 'left', background: '#f4f6f8', minHeight: '100vh' }}>
+      {/* Cloud Reveal Animation Styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes cloudFadeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            filter: blur(5px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+          }
+        }
+        .cloud-word {
+          display: inline-block;
+          opacity: 0;
+          animation: cloudFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes pulseGlow {
+          0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        .pulse-badge {
+          animation: pulseGlow 2s infinite;
+        }
+      `}} />
+
       {/* Hero Section */}
       <section className="hero-section" style={{
         background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
         color: 'white',
         padding: '120px 0 60px',
-        textAlign: 'center',
-        marginTop: '70px'
+        textAlign: 'center'
       }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>{siteData.contact.pageTitle}</h1>
-          <p style={{ fontSize: '1.2rem', opacity: 0.9, maxWidth: '700px', margin: '0 auto' }}>
-            {siteData.contact.pageDescription}
+        <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
+          <h1 style={{ 
+            fontSize: '3rem', 
+            marginBottom: '20px', 
+            fontWeight: '800',
+            letterSpacing: '1px',
+            textShadow: '0 2px 10px rgba(0,0,0,0.15)'
+          }}>
+            {siteData.contact.pageTitle}
+          </h1>
+          <p style={{ 
+            fontSize: '1.25rem', 
+            fontWeight: '500',
+            opacity: 0.95, 
+            maxWidth: '750px', 
+            margin: '0 auto',
+            lineHeight: '1.6',
+            wordSpacing: '2px',
+            textAlign: 'center'
+          }}>
+            {words.map((word: string, i: number) => (
+              <span 
+                key={i} 
+                className="cloud-word" 
+                style={{ 
+                  animationDelay: `${i * 0.08}s`,
+                  marginRight: '6px'
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="main-content" style={{ padding: '3rem 0', background: '#f8f9fa' }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+      <section className="main-content" style={{ padding: '80px 0', background: '#f4f6f8' }}>
+        <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
           <div className="content-grid" style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -193,11 +255,11 @@ export default function ContactPage() {
             {/* Contact Information */}
             <div className="contact-info" style={{
               background: 'white',
-              padding: '2rem',
-              borderRadius: '10px',
-              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+              padding: '30px',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
             }}>
-              {/* عنوان القسم بالتنسيق الجديد المطلوب */}
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <span style={{
                   display: 'inline-block',
@@ -251,11 +313,11 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="contact-form-container" style={{
               background: 'white',
-              padding: '2rem',
-              borderRadius: '10px',
-              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+              padding: '30px',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
             }}>
-              {/* عنوان القسم بالتنسيق الجديد المطلوب */}
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <span style={{
                   display: 'inline-block',
@@ -343,9 +405,8 @@ export default function ContactPage() {
       </section>
 
       {/* Branches Section */}
-      <section className="branches-section" style={{ padding: '3rem 0', background: 'white' }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          {/* عنوان القسم بالتنسيق الجديد المطلوب */}
+      <section className="branches-section" style={{ padding: '80px 0', background: 'white', borderTop: '1px solid #e2e8f0' }}>
+        <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <span style={{
               display: 'inline-block',
@@ -399,33 +460,99 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Emergency Section */}
+      {/* Modern & Sleek Emergency Section */}
       <section className="emergency-section" style={{
-        background: 'linear-gradient(135deg, #0A6E79 0%, #08545D 100%)',
+        background: 'linear-gradient(135deg, #084c55 0%, #0A6E79 100%)',
         color: 'white',
-        padding: '3rem 0',
-        textAlign: 'center'
+        padding: '60px 0',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h2 style={{ marginBottom: '1rem', fontSize: '1.8rem' }}>{siteData.contact.emergencyTitle}</h2>
-          <p style={{ marginBottom: '2rem', opacity: 0.9, maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
-            {siteData.contact.emergencyDescription}
-          </p>
-          <a href={`tel:${siteData.contact.emergencyPhone}`} className="emergency-btn" style={{
-            background: 'white',
-            color: '#0A6E79',
-            padding: '1rem 2rem',
-            border: 'none',
-            borderRadius: '25px',
-            fontSize: '1.1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'transform 0.3s',
-            textDecoration: 'none',
-            display: 'inline-block'
+        {/* Subtle decorative background shapes */}
+        <div style={{
+          position: 'absolute',
+          top: '-50px',
+          right: '-50px',
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          borderRadius: '50%',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div className="container" style={{ width: '90%', maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '20px',
+            padding: '40px 50px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '30px',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)'
           }}>
-            <i className="fas fa-phone"></i> {siteData.contact.emergencyPhone}
-          </a>
+            {/* Left Content (Title & Description) */}
+            <div style={{ flex: '1 1 500px', textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <span className="pulse-badge" style={{
+                  width: '40px',
+                  height: '40px',
+                  background: '#ffffff',
+                  color: '#0A6E79',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.2rem',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
+                  <i className="fas fa-headset"></i>
+                </span>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800', letterSpacing: '0.5px', margin: 0 }}>
+                  {siteData.contact.emergencyTitle}
+                </h2>
+              </div>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: '1.05rem', lineHeight: '1.6', maxWidth: '600px' }}>
+                {siteData.contact.emergencyDescription}
+              </p>
+            </div>
+
+            {/* Right Action (Call Button) */}
+            <div>
+              <a href={`tel:${siteData.contact.emergencyPhone}`} className="emergency-btn" style={{
+                background: '#ffffff',
+                color: '#0A6E79',
+                padding: '16px 32px',
+                borderRadius: '14px',
+                fontSize: '1.15rem',
+                fontWeight: '800',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.background = '#f8fafc';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = '#ffffff';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+              }}
+              >
+                <i className="fas fa-phone-alt" style={{ fontSize: '1rem' }}></i>
+                <span>{siteData.contact.emergencyPhone}</span>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </div>

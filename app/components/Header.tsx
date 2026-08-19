@@ -17,18 +17,18 @@ export default function Header({ companyName, companySubtitle, logo }: HeaderPro
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="header">
+    <header className="header" dir="ltr" style={{ textAlign: 'left' }}>
       <nav className="navbar">
         <div className="nav-container">
           
-          {/* قسم الشعار والاسم بجانب بعض بأسلوب متناسق */}
+          {/* قسم الشعار والاسم بجانب بعض بأسلوب متناسق وواضح */}
           <Link href="/" className="nav-logo flex items-center gap-3 text-decoration-none">
             {logo && (
-              <div className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-200/80 p-1">
+              <div className="w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl p-1 border border-slate-200 shadow-md">
                 <img 
                   src={logo} 
                   alt={companyName} 
-                  className="max-w-full max-h-full object-contain"
+                  className="w-full h-full object-contain scale-125"
                 />
               </div>
             )}

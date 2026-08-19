@@ -47,10 +47,10 @@ const AVAILABLE_ICONS = [
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"company" | "contact" | "emergency" | "content" | "quality" | "process">("company");
+  const [activeTab, setActiveTab] = useState<"company" | "contact" | "emergency" | "content" | "quality" | "process" | "statistics">("company");
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // إعدادات النظام العامة (تم ربط الحقلين الجديدين هنا مباشرة)
+  // إعدادات النظام العامة
   const [settings, setSettings] = useState({
     company_name: "",
     company_subtitle: "",
@@ -66,8 +66,8 @@ export default function SettingsPage() {
     emergency_description: "",
     form_title: "",
     form_description: "",
-    contact_info_title: "",       // الحقل الجديد الأول
-    contact_info_description: "", // الحقل الجديد الثاني
+    contact_info_title: "",
+    contact_info_description: "",
     process_title: "",
   });
 
@@ -80,7 +80,7 @@ export default function SettingsPage() {
   const [qOrder, setQOrder] = useState(0);
   const [qIsActive, setQIsActive] = useState(true);
 
-  // حالة إدارة قسم خطوات العمل (Process Steps / How We Serve You)
+  // حالة إدارة قسم خطوات العمل (Process Steps)
   const [processSteps, setProcessSteps] = useState<any[]>([]);
   const [editingProcessId, setEditingProcessId] = useState<number | null>(null);
   const [pNumber, setPNumber] = useState(1);
@@ -88,10 +88,20 @@ export default function SettingsPage() {
   const [pDescription, setPDescription] = useState("");
   const [pIcon, setPIcon] = useState("fas fa-check-circle");
 
+  // حالة إدارة قسم الإحصائيات (Statistics / Achievements)
+  const [statisticsItems, setStatisticsItems] = useState<any[]>([]);
+  const [editingStatId, setEditingStatId] = useState<number | null>(null);
+  const [statNumber, setStatNumber] = useState("");
+  const [statLabel, setStatLabel] = useState("");
+  const [statDescription, setStatDescription] = useState("");
+  const [statOrder, setStatOrder] = useState(0);
+  const [statIsActive, setStatIsActive] = useState(true);
+
   useEffect(() => {
     fetchSettings();
     fetchQualityItems();
     fetchProcessSteps();
+    fetchStatisticsItems();
   }, []);
 
   const fetchSettings = async () => {
@@ -139,6 +149,20 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchStatisticsItems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("statistics")
+        .select("*")
+        .order("order", { ascending: true });
+      if (!error && data) {
+        setStatisticsItems(data);
+      }
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+    }
+  };
+
   // حفظ الإعدادات العامة
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +195,7 @@ export default function SettingsPage() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  // عمليات ضمان الجودة (إضافة وتعديل وحذف)
+  // عمليات ضمان الجودة
   const handleSaveQualityItem = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -236,7 +260,7 @@ export default function SettingsPage() {
     setQIsActive(true);
   };
 
-  // عمليات قسم خطوات العمل (How We Serve You)
+  // عمليات قسم خطوات العمل
   const handleSaveProcessStep = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -306,6 +330,79 @@ export default function SettingsPage() {
     setPIcon("fas fa-check-circle");
   };
 
+  // عمليات قسم الإحصائيات
+  const handleSaveStatistic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const payload = {
+        number: statNumber,
+        label: statLabel,
+        description: statDescription,
+        order: statOrder,
+        is_active: statIsActive,
+      };
+
+      if (editingStatId) {
+        const { error } = await supabase
+          .from("statistics")
+          .update(payload)
+          .eq("id", editingStatId);
+
+        if (error) throw error;
+        setMessage({ text: "تم تحديث الإحصائية بنجاح!", type: "success" });
+      } else {
+        const { error } = await supabase
+          .from("statistics")
+          .insert([payload]);
+
+        if (error) throw error;
+        setMessage({ text: "تم إضافة الإحصائية بنجاح!", type: "success" });
+      }
+
+      resetStatForm();
+      fetchStatisticsItems();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error("Error saving statistic:", error);
+      setMessage({ text: "حدث خطأ أثناء حفظ الإحصائية", type: "error" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditStat = (item: any) => {
+    setEditingStatId(item.id);
+    setStatNumber(item.number || "");
+    setStatLabel(item.label || "");
+    setStatDescription(item.description || "");
+    setStatOrder(item.order || 0);
+    setStatIsActive(item.is_active ?? true);
+  };
+
+  const handleDeleteStat = async (id: number) => {
+    if (!confirm("هل أنت متأكد من حذف هذه الإحصائية؟")) return;
+    try {
+      const { error } = await supabase.from("statistics").delete().eq("id", id);
+      if (error) throw error;
+      fetchStatisticsItems();
+      setMessage({ text: "تم حذف الإحصائية بنجاح", type: "success" });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error("Error deleting statistic:", error);
+    }
+  };
+
+  const resetStatForm = () => {
+    setEditingStatId(null);
+    setStatNumber("");
+    setStatLabel("");
+    setStatDescription("");
+    setStatOrder(0);
+    setStatIsActive(true);
+  };
+
   const tabs = [
     { id: "company", label: "معلومات الهوية والشركة", icon: Building },
     { id: "contact", label: "بيانات التواصل", icon: PhoneCall },
@@ -313,6 +410,7 @@ export default function SettingsPage() {
     { id: "content", label: "نموذج الرسالة ونموذج التواصل", icon: FileText },
     { id: "quality", label: "قسم ضمان الجودة", icon: ShieldCheck },
     { id: "process", label: "قسم كيف نخدمك", icon: ListOrdered },
+    { id: "statistics", label: "قسم الإحصائيات (Achievements)", icon: Sparkles },
   ];
 
   // دالة رفع الشعار
@@ -383,13 +481,13 @@ export default function SettingsPage() {
             </h1>
           </div>
           <p className="text-xs text-slate-500">
-            تحديث هويات الموقع وشعاره، بيانات التواصل، ضمان الجودة، وقسم كيف نخدمك
+            تحديث هويات الموقع وشعاره، بيانات التواصل، ضمان الجودة، كيف نخدمك، وإحصائيات الموقع
           </p>
         </div>
 
         <div className="px-3.5 py-1.5 rounded-2xl bg-teal-50 text-teal-800 border border-teal-100 text-xs font-extrabold flex items-center gap-1.5 self-start md:self-auto">
           <Sparkles size={14} className="text-teal-600" />
-          <span>تزامن مع الجداول: settings, quality_items, process_steps</span>
+          <span>تزامن مع الجداول: settings, quality_items, process_steps, statistics</span>
         </div>
       </div>
 
@@ -458,7 +556,7 @@ export default function SettingsPage() {
                     type="text"
                     value={settings.company_name}
                     onChange={(e) => handleChange("company_name", e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 focus:outline-none focus:bg-white font-medium"
                     required
                   />
                 </div>
@@ -468,7 +566,7 @@ export default function SettingsPage() {
                     type="text"
                     value={settings.company_subtitle}
                     onChange={(e) => handleChange("company_subtitle", e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium"
+                    className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 focus:outline-none focus:bg-white font-medium"
                     required
                   />
                 </div>
@@ -483,7 +581,7 @@ export default function SettingsPage() {
                       type="text"
                       value={settings.logo}
                       onChange={(e) => handleChange("logo", e.target.value)}
-                      className="w-full pl-4 pr-10 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 font-mono dir-ltr text-right focus:outline-none focus:bg-white font-medium"
+                      className="w-full pl-4 pr-10 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 font-mono dir-ltr text-right font-medium"
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -643,7 +741,6 @@ export default function SettingsPage() {
                   <input type="text" value={settings.form_description} onChange={(e) => handleChange("form_description", e.target.value)} className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 font-medium" />
                 </div>
                 
-                {/* الحقلان الجديدان لصفحة اتصل بنا (تم تحديثهما ليرتبطا بالأسماء الصحيحة) */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">عنوان قسم معلومات التواصل (contact_info_title)</label>
                   <input type="text" value={settings.contact_info_title} onChange={(e) => handleChange("contact_info_title", e.target.value)} className="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-200/90 rounded-2xl text-xs text-slate-800 font-medium" placeholder="Contact Information" />
@@ -806,7 +903,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* TAB 6: PROCESS STEPS (HOW WE SERVE YOU) */}
+      {/* TAB 6: PROCESS STEPS */}
       {activeTab === "process" && (
         <div className="space-y-6">
           <div className="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-6">
@@ -918,6 +1015,136 @@ export default function SettingsPage() {
                         <td className="p-3 flex items-center gap-2">
                           <button onClick={() => handleEditProcess(step)} className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px] cursor-pointer">تعديل</button>
                           <button onClick={() => handleDeleteProcess(step.id)} className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[11px] cursor-pointer">حذف</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 7: STATISTICS / ACHIEVEMENTS */}
+      {activeTab === "statistics" && (
+        <div className="space-y-6">
+          <div className="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Sparkles size={18} className="text-teal-600" />
+                إدارة قسم الإحصائيات (Our Achievements)
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">إضافة وتعديل الأرقام، العناوين، والوصف الخاص بإنجازات الشركة</p>
+            </div>
+
+            <form onSubmit={handleSaveStatistic} className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h3 className="text-xs font-extrabold text-slate-800">
+                {editingStatId ? "تعديل الإحصائية الحالية" : "إضافة إحصائية جديدة"}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">الرقم / القيمة (Number) *</label>
+                  <input
+                    type="text"
+                    value={statNumber}
+                    onChange={(e) => setStatNumber(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium dir-ltr text-right"
+                    placeholder="مثال: 15+ أو 100k"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">العنوان / التصنيف (Label) *</label>
+                  <input
+                    type="text"
+                    value={statLabel}
+                    onChange={(e) => setStatLabel(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                    placeholder="مثال: Years of Experience"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">الترتيب (Order)</label>
+                  <input
+                    type="number"
+                    value={statOrder}
+                    onChange={(e) => setStatOrder(Number(e.target.value))}
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">الوصف المختصر</label>
+                <textarea
+                  value={statDescription}
+                  onChange={(e) => setStatDescription(e.target.value)}
+                  rows={2}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium resize-none"
+                  placeholder="تفاصيل إضافية حول هذه الإحصائية..."
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="statIsActive"
+                  checked={statIsActive}
+                  onChange={(e) => setStatIsActive(e.target.checked)}
+                  className="w-4 h-4 text-teal-600 rounded"
+                />
+                <label htmlFor="statIsActive" className="text-xs font-bold text-slate-700 cursor-pointer">
+                  مفعل (يظهر في الموقع العام)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button type="submit" className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-extrabold shadow-sm cursor-pointer">
+                  {editingStatId ? "تحديث الإحصائية" : "إضافة الإحصائية"}
+                </button>
+                {editingStatId && (
+                  <button type="button" onClick={resetStatForm} className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold cursor-pointer">
+                    إلغاء
+                  </button>
+                )}
+              </div>
+            </form>
+
+            <div className="overflow-x-auto border border-slate-200/80 rounded-2xl">
+              <table className="w-full text-right text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-700">
+                    <th className="p-3">القيمة / الرقم</th>
+                    <th className="p-3">العنوان</th>
+                    <th className="p-3">الوصف</th>
+                    <th className="p-3">الترتيب</th>
+                    <th className="p-3">الحالة</th>
+                    <th className="p-3">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statisticsItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-slate-400">لا توجد إحصائيات مسجلة حتى الآن.</td>
+                    </tr>
+                  ) : (
+                    statisticsItems.map((item) => (
+                      <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                        <td className="p-3 font-extrabold text-teal-700 text-sm">{item.number}</td>
+                        <td className="p-3 font-extrabold text-slate-900">{item.label}</td>
+                        <td className="p-3 text-slate-500 max-w-xs truncate">{item.description}</td>
+                        <td className="p-3">{item.order}</td>
+                        <td className="p-3">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${item.is_active ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>
+                            {item.is_active ? "مفعل" : "مخفي"}
+                          </span>
+                        </td>
+                        <td className="p-3 flex items-center gap-2">
+                          <button onClick={() => handleEditStat(item)} className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px] cursor-pointer">تعديل</button>
+                          <button onClick={() => handleDeleteStat(item.id)} className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[11px] cursor-pointer">حذف</button>
                         </td>
                       </tr>
                     ))

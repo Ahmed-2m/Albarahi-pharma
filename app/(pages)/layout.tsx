@@ -21,6 +21,9 @@ export default async function PagesLayout({
   const phone = getSetting("phone") || "+967 1 234567";
   const email = getSetting("email") || "info@sadiqalbarhi.com";
   const address = getSetting("address") || "Sana'a, Yemen";
+  
+  // 1. جلب ساعات العمل من قاعدة البيانات
+  const workingHours = getSetting("working_hours") || "Sat - Thu: 8:00 AM - 6:00 PM\nFriday: Closed";
 
   return (
     <>
@@ -34,7 +37,7 @@ export default async function PagesLayout({
       {/* 2. محتوى الصفحات */}
       <main>{children}</main>
 
-      {/* 3. الفوتر الخاص بصفحات الموقع */}
+      {/* 3. الفوتر الخاص بصفحات الموقع (تم تمرير ساعات العمل هنا) */}
       <Footer
         companyName={companyName}
         companySubtitle={companySubtitle}
@@ -42,6 +45,7 @@ export default async function PagesLayout({
         phone={phone}
         email={email}
         address={address}
+        workingHours={workingHours} 
       />
     </>
   );
