@@ -1,5 +1,6 @@
 "use client";
 
+import { logout } from "@/app/actions/auth"; 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -31,6 +32,11 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // إخفاء الهيدر والقائمة الجانبية إذا كنا في صفحة تسجيل الدخول
+  if (pathname === "/admin/login") {
+    return <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4" dir="rtl">{children}</main>;
+  }
 
   const menu = [
     { name: "الرئيسية", icon: LayoutDashboard, path: "/admin", badge: "Overview" },
@@ -67,7 +73,7 @@ export default function AdminLayout({
             {isOpen ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
 
-          {/* System Brand Title on Header (visible when sidebar collapsed or on mobile) */}
+          {/* System Brand Title on Header */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-700 to-teal-500 text-white font-bold flex items-center justify-center text-xs shadow-sm">
               ص
@@ -200,17 +206,28 @@ export default function AdminLayout({
                 })}
               </nav>
 
-              <div className="pt-4 border-t border-slate-100 mt-auto">
+              <div className="pt-4 border-t border-slate-100 mt-auto space-y-2">
                 <Link
                   href="/"
                   target="_blank"
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-200/80"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-all border border-slate-200/80"
                 >
                   <div className="flex items-center gap-2">
                     <ExternalLink size={16} />
                     <span>الذهاب للموقع الرئيسي</span>
                   </div>
                 </Link>
+
+                {/* زر تسجيل الخروج للموبايل */}
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all border border-rose-200/60 w-full"
+                  >
+                    <LogOut size={16} />
+                    <span>تسجيل الخروج</span>
+                  </button>
+                </form>
               </div>
             </motion.aside>
           )}
@@ -284,8 +301,8 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* Footer Back Link */}
-          <div className="p-3 border-t border-slate-100">
+          {/* Footer Back Link & Logout */}
+          <div className="p-3 border-t border-slate-100 space-y-1.5">
             <Link
               href="/"
               target="_blank"
@@ -296,6 +313,19 @@ export default function AdminLayout({
               <ExternalLink size={17} className="shrink-0 text-slate-400 group-hover:text-teal-700" />
               {isOpen && <span>زيارة الموقع العام</span>}
             </Link>
+
+            {/* زر تسجيل الخروج للديسكتوب */}
+            <form action={logout}>
+              <button
+                type="submit"
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all w-full ${
+                  !isOpen && "justify-center px-0"
+                }`}
+              >
+                <LogOut size={17} className="shrink-0 text-rose-500 group-hover:text-rose-700" />
+                {isOpen && <span>تسجيل الخروج</span>}
+              </button>
+            </form>
           </div>
         </motion.aside>
 

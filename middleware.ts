@@ -11,43 +11,66 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name: string) {
+          return request.cookies.get(name)?.value
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+        set(name: string, value: string, options: any) {
+          // تعيين الكوكي في الطلب
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          // إنشاء استجابة جديدة
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          // تعيين الكوكي في الاستجابة
+          supabaseResponse.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: any) {
+          // إزالة الكوكي من الطلب
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          // إنشاء استجابة جديدة
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          // إزالة الكوكي من الاستجابة
+          supabaseResponse.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
         },
       },
     }
   )
 
-  // تحديث الجلسة إذا انتهت
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // إذا لم يكن مسجل دخول وحاول الدخول لصفحة الإدارة (ما عدا صفحة الـ login)
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/admin') &&
-    request.nextUrl.pathname !== '/admin/login'
-  ) {
+  // حماية المسار /admin
+  if (!user && request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/login') {
     const url = request.nextUrl.clone()
     url.pathname = '/admin/login'
     return NextResponse.redirect(url)
+  }
+
+  // منع الدخول لصفحة الـ login إذا كان مسجل دخول
+  if (user && request.nextUrl.pathname === '/admin/login') {
+    return NextResponse.redirect(new URL('/admin', request.url))
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-  ],
+  matcher: ['/admin/:path*'],
 }
