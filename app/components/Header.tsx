@@ -26,11 +26,11 @@ export default function Header({ companyName, companySubtitle, logo }: HeaderPro
           {/* قسم الشعار والاسم (تم ضبط العرض لمنع تكسر الكلمات) */}
           <Link href="/" className="flex items-center gap-3 text-decoration-none shrink-0">
             {logo && (
-              <div className="w-11 h-11 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+              <div className="h-11 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl px-2 py-1 border border-slate-200 shadow-sm">
                 <img 
                   src={logo} 
                   alt={companyName} 
-                  className="w-full h-full object-contain"
+                  className="max-h-full w-auto object-contain"
                 />
               </div>
             )}
