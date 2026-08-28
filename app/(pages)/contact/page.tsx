@@ -248,7 +248,7 @@ export default function ContactPage() {
         <div className="container" style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
           <div className="content-grid" style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '3rem',
             alignItems: 'start'
           }}>
@@ -258,7 +258,9 @@ export default function ContactPage() {
               padding: '30px',
               borderRadius: '16px',
               border: '1px solid #e2e8f0',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+              boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+              width: '100%',
+              boxSizing: 'border-box'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <span style={{
@@ -267,7 +269,7 @@ export default function ContactPage() {
                   color: 'white',
                   padding: '10px 25px',
                   borderRadius: '50px',
-                  fontSize: '1.6rem',
+                  fontSize: '1.5rem',
                   fontWeight: '800',
                   boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
                   letterSpacing: '0.5px'
@@ -316,7 +318,9 @@ export default function ContactPage() {
               padding: '30px',
               borderRadius: '16px',
               border: '1px solid #e2e8f0',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+              boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+              width: '100%',
+              boxSizing: 'border-box'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <span style={{
@@ -325,7 +329,7 @@ export default function ContactPage() {
                   color: 'white',
                   padding: '10px 25px',
                   borderRadius: '50px',
-                  fontSize: '1.6rem',
+                  fontSize: '1.5rem',
                   fontWeight: '800',
                   boxShadow: '0 4px 15px rgba(10, 110, 121, 0.2)',
                   letterSpacing: '0.5px'
@@ -352,22 +356,22 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit}>
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Full Name *</label>
-                  <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', boxSizing: 'border-box' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Email Address *</label>
-                  <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', boxSizing: 'border-box' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="phone" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Phone Number</label>
-                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', boxSizing: 'border-box' }} />
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="department" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Target Department *</label>
-                  <select id="department" name="department" value={formData.department} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', background: 'white' }}>
+                  <select id="department" name="department" value={formData.department} onChange={handleChange} style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', background: 'white', boxSizing: 'border-box' }}>
                     <option value="general">General Inquiry</option>
                     <option value="sales">Sales & Pharmaceuticals</option>
                     <option value="medical">Medical Supplies</option>
@@ -377,12 +381,12 @@ export default function ContactPage() {
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="subject" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Subject *</label>
-                  <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem' }} />
+                  <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', boxSizing: 'border-box' }} />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                   <label htmlFor="message" style={{ display: 'block', marginBottom: '0.5rem', color: '#333', fontWeight: '500' }}>Message *</label>
-                  <textarea id="message" name="message" value={formData.message} onChange={handleChange} required placeholder="Please write your message here..." style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', height: '120px', resize: 'vertical' }}></textarea>
+                  <textarea id="message" name="message" value={formData.message} onChange={handleChange} required placeholder="Please write your message here..." style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '1rem', height: '120px', resize: 'vertical', boxSizing: 'border-box' }}></textarea>
                 </div>
                 
                 <button type="submit" disabled={submitting} className="btn-submit" style={{
@@ -394,7 +398,8 @@ export default function ContactPage() {
                   fontSize: '1rem',
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   opacity: submitting ? 0.7 : 1,
-                  transition: 'background 0.3s'
+                  transition: 'background 0.3s',
+                  width: '100%'
                 }}>
                   {submitting ? 'Sending...' : 'Send Message'}
                 </button>
@@ -425,7 +430,7 @@ export default function ContactPage() {
 
           <div className="branches-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '1.5rem'
           }}>
             {siteData.branches && siteData.branches.length > 0 ? (
@@ -436,7 +441,9 @@ export default function ContactPage() {
                   borderRadius: '10px',
                   borderLeft: '4px solid #0A6E79',
                   transition: 'transform 0.3s, box-shadow 0.3s',
-                  minHeight: '200px'
+                  minHeight: '200px',
+                  width: '100%',
+                  boxSizing: 'border-box'
                 }}>
                   <h3 style={{ color: '#0A6E79', marginBottom: '1rem', fontSize: '1.1rem' }}>{branch.name}</h3>
                   <div className="branch-info" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'flex-start' }}>
@@ -468,7 +475,6 @@ export default function ContactPage() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Subtle decorative background shapes */}
         <div style={{
           position: 'absolute',
           top: '-50px',
@@ -495,7 +501,6 @@ export default function ContactPage() {
             gap: '30px',
             boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)'
           }}>
-            {/* Left Content (Title & Description) */}
             <div style={{ flex: '1 1 500px', textAlign: 'left' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <span className="pulse-badge" style={{
@@ -521,7 +526,6 @@ export default function ContactPage() {
               </p>
             </div>
 
-            {/* Right Action (Call Button) */}
             <div>
               <a href={`tel:${siteData.contact.emergencyPhone}`} className="emergency-btn" style={{
                 background: '#ffffff',

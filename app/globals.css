@@ -163,7 +163,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-/* ===== FEATURES (تم التعديل هنا لإنهاء الفراغات) ===== */
+/* ===== FEATURES ===== */
 .features {
   padding: 80px 0;
   background: #f8f9fa;
@@ -392,67 +392,178 @@
   font-size: 0.9rem;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== HEADER FIXES ===== */
+.header {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar {
+  padding: 10px 0;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.nav-menu {
+  display: flex;
+  list-style: none;
+  gap: 24px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #334155;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #0A6E79;
+}
+
+/* تنسيق القائمة المنسدلة للجوال */
 @media (max-width: 768px) {
-  .hero-content {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .hero-text h1 {
-    font-size: 2rem;
-  }
-
-  .hero-buttons {
-    justify-content: center;
-  }
-
   .nav-menu {
     display: none;
-  }
-
-  .hamburger {
-    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-bottom: 1px solid #e2e8f0;
+    gap: 15px;
+    z-index: 100;
   }
 }
 
 .hamburger {
   display: none;
   cursor: pointer;
+  background: transparent;
+  border: none;
 }
 
-.hamburger .bar {
-  display: block;
-  width: 25px;
-  height: 3px;
-  margin: 5px auto;
-  background: #333;
-  transition: all 0.3s;
+@media (max-width: 768px) {
+  .hamburger {
+    display: block !important;
+  }
 }
 
-/* تكبير حجم مربع الصورة الأساسي ليشغل مساحة ضخمة وواضحة */
-.hero-image {
-    width: 650px !important;       /* تكبير العرض بشكل صريح وواضح */
-    max-width: 100% !important;
-    min-height: 400px !important;  /* زيادة الارتفاع الأساسي للمربع الأبيض */
-    display: flex !important;
-    align-items: center !important;
+@media (max-width: 768px) {
+  /* جعل محتوى الهيرو عموداً واحداً متكاملاً على الجوال */
+  .hero-content {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+    gap: 30px !important;
+  }
+
+  /* توسيط النصوص والأزرار داخل قسم الهيرو على الجوال */
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-buttons {
     justify-content: center !important;
-}
+  }
 
-/* تكبير الصورة نفسها داخل المربع لتملا المساحة الكبيرة الجديدة */
-.hero-image img {
+  .container, .nav-container, .hero-content, .footer-content {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  /* ضبط قياس صندوق الصورة في الجوال ليأخذ العرض المناسب بدون تداخل */
+  .hero-image {
     width: 100% !important;
-    height: auto !important;
-    max-height: 480px !important;  /* السماح للصورة بالوصول لحجم كبير مريح للعين */
-    object-fit: contain !important;
-    
-    /* تأثير التفاعل (التكبير الإضافي عند تمرير الماوس) */
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    min-height: auto !important;
+    margin: 0 auto;
+  }
+
+  .hero-image img {
+    max-height: 250px !important;
+  }
+
+  .hero-text h1 {
+    font-size: 2.2rem !important;
+  }
 }
 
-/* تأثير التكبير الأكبر عند مرور السهم عليها */
-.hero-image:hover img {
-    transform: scale(1.06); /* تكبير ناعم إضافي عند مرور الماوس */
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+/* ===== ABOUT US PAGE RESPONSIVE FIXES ===== */
+@media (max-width: 768px) {
+  /* تحويل أقسام صفحة About إلى أعمدة فردية متتالية */
+  .about-section, 
+  .about-grid, 
+  .mission-vision-grid, 
+  .story-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    width: 100% !important;
+  }
+
+/* ===== SPACING FIX FOR ABOUT PAGE SECTIONS ===== */
+.about-page, 
+.story-section, 
+.about-content-section {
+  padding-top: 40px !important;
+}
+
+/* إضافة مسافة علوية لجميع العناوين البارزة أو البطاقات التي تأتي مباشرة بعد قسم الهيدر أو البانر */
+.hero + *, 
+.about-hero + div, 
+.page-header + div {
+  margin-top: 40px !important;
+}
+
+@media (max-width: 768px) {
+  /* زيادة المسافة الفاصلة على الجوال لضمان عدم التلاصق */
+  .about-story, 
+  .story-container,
+  .section-padding {
+    margin-top: 35px !important;
+    padding-top: 25px !important;
+  }
+}
+}
+
+/* ===== CONTACT PAGE RESPONSIVE FIXES ===== */
+@media (max-width: 768px) {
+  /* تحويل شبكة صفحة الاتصال إلى عمود واحد متسلسل */
+  .contact-container, 
+  .contact-grid, 
+  .contact-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 30px !important;
+    width: 100% !important;
+    padding: 0 15px !important;
+  }
+
+  /* جعل بطاقات معلومات الاتصال ونموذج الرسائل يأخذان العرض الكامل */
+  .contact-info-card, 
+  .contact-form-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
 }

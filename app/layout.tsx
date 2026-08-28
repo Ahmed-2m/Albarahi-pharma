@@ -14,6 +14,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -29,7 +30,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased bg-slate-50 text-slate-800 selection:bg-teal-600 selection:text-white">
+      <body className="font-sans antialiased bg-slate-50 text-slate-800 selection:bg-teal-600 selection:text-white overflow-x-hidden">
         {children}
       </body>
     </html>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SettingsForm from "./SettingsForm";
 import { supabase } from "@/lib/supabase";
 import {
   Settings,
@@ -44,10 +45,10 @@ const AVAILABLE_ICONS = [
   { name: 'fas fa-hands-helping', label: 'خدمة وثقة' },
 ];
 
-export default function SettingsPage() {
+export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"company" | "contact" | "emergency" | "content" | "quality" | "process" | "statistics">("company");
+  const [activeTab, setActiveTab] = useState<"account" | "company" | "contact" | "emergency" | "content" | "quality" | "process" | "statistics">("account");
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // إعدادات النظام العامة
@@ -404,13 +405,14 @@ export default function SettingsPage() {
   };
 
   const tabs = [
+    { id: "account", label: "حساب الأدمن والأمان", icon: ShieldCheck },
     { id: "company", label: "معلومات الهوية والشركة", icon: Building },
     { id: "contact", label: "بيانات التواصل", icon: PhoneCall },
     { id: "emergency", label: "قسم الطوارئ", icon: AlertTriangle },
     { id: "content", label: "نموذج الرسالة ونموذج التواصل", icon: FileText },
     { id: "quality", label: "قسم ضمان الجودة", icon: ShieldCheck },
     { id: "process", label: "قسم كيف نخدمك", icon: ListOrdered },
-    { id: "statistics", label: "قسم الإحصائيات (Achievements)", icon: Sparkles },
+    { id: "statistics", label: "قسم الإحصائيات", icon: Sparkles },
   ];
 
   // دالة رفع الشعار
@@ -481,13 +483,8 @@ export default function SettingsPage() {
             </h1>
           </div>
           <p className="text-xs text-slate-500">
-            تحديث هويات الموقع وشعاره، بيانات التواصل، ضمان الجودة، كيف نخدمك، وإحصائيات الموقع
+            تحديث هويات الموقع وشعاره، بيانات التواصل، حساب الأدمن، ضمان الجودة، كيف نخدمك، وإحصائيات الموقع
           </p>
-        </div>
-
-        <div className="px-3.5 py-1.5 rounded-2xl bg-teal-50 text-teal-800 border border-teal-100 text-xs font-extrabold flex items-center gap-1.5 self-start md:self-auto">
-          <Sparkles size={14} className="text-teal-600" />
-          <span>تزامن مع الجداول: settings, quality_items, process_steps, statistics</span>
         </div>
       </div>
 
@@ -535,6 +532,11 @@ export default function SettingsPage() {
           );
         })}
       </div>
+
+      {/* TAB 0: ACCOUNT SETTINGS */}
+      {activeTab === "account" && (
+        <SettingsForm />
+      )}
 
       {/* TAB 1: COMPANY */}
       {activeTab === "company" && (

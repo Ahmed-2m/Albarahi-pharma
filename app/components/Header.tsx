@@ -1,106 +1,98 @@
 // components/Header.tsx
 'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
-  companyName: string
-  companySubtitle: string
-  logo: string
+  companyName: string;
+  companySubtitle: string;
+  logo: string;
 }
 
 export default function Header({ companyName, companySubtitle, logo }: HeaderProps) {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // دالة مساعدة لتحديد ما إذا كان الرابط هو الصفحة الحالية
   const isActive = (path: string) => pathname === path;
+  const handleLinkClick = () => setIsMobileMenuOpen(false);
 
   return (
     <header className="header" dir="ltr" style={{ textAlign: 'left' }}>
       <nav className="navbar">
-        <div className="nav-container">
+        <div className="nav-container flex items-center justify-between relative">
           
-          {/* قسم الشعار والاسم بجانب بعض بأسلوب متناسق وواضح */}
-          <Link href="/" className="nav-logo flex items-center gap-3 text-decoration-none">
+          {/* قسم الشعار والاسم (تم ضبط العرض لمنع تكسر الكلمات) */}
+          <Link href="/" className="flex items-center gap-3 text-decoration-none shrink-0">
             {logo && (
-              <div className="w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl p-1 border border-slate-200 shadow-md">
+              <div className="w-11 h-11 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
                 <img 
                   src={logo} 
                   alt={companyName} 
-                  className="w-full h-full object-contain scale-125"
+                  className="w-full h-full object-contain"
                 />
               </div>
             )}
             
-            <div className="flex flex-col justify-center gap-1.5">
-              <h2 className="text-sm font-extrabold !m-0 !p-0 leading-none text-slate-900">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-base font-bold !m-0 !p-0 leading-tight text-slate-900 tracking-tight whitespace-nowrap">
                 {companyName}
               </h2>
               {companySubtitle && (
-                <span className="text-[10px] text-teal-600 font-semibold leading-none">
+                <span className="text-[11px] text-teal-600 font-medium leading-tight truncate max-w-[200px] sm:max-w-xs">
                   {companySubtitle}
                 </span>
               )}
             </div>
           </Link>
 
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link 
-                href="/" 
-                className={`nav-link ${isActive('/') ? 'active' : ''}`}
-                style={{ color: isActive('/') ? '#0A6E79' : undefined, fontWeight: isActive('/') ? 'bold' : undefined }}
-              >
+          {/* روابط التنقل */}
+          <ul 
+            className="nav-menu"
+            style={{ display: isMobileMenuOpen ? 'flex' : undefined }}
+          >
+            <li>
+              <Link href="/" onClick={handleLinkClick} className={`nav-link ${isActive('/') ? 'active text-[#0A6E79] font-bold' : ''}`}>
                 Home
               </Link>
             </li>
-            <li className="nav-item">
-              <Link 
-                href="/about" 
-                className={`nav-link ${isActive('/about') ? 'active' : ''}`}
-                style={{ color: isActive('/about') ? '#0A6E79' : undefined, fontWeight: isActive('/about') ? 'bold' : undefined }}
-              >
+            <li>
+              <Link href="/about" onClick={handleLinkClick} className={`nav-link ${isActive('/about') ? 'active text-[#0A6E79] font-bold' : ''}`}>
                 About Us
               </Link>
             </li>
-            <li className="nav-item">
-              <Link 
-                href="/products" 
-                className={`nav-link ${isActive('/products') ? 'active' : ''}`}
-                style={{ color: isActive('/products') ? '#0A6E79' : undefined, fontWeight: isActive('/products') ? 'bold' : undefined }}
-              >
+            <li>
+              <Link href="/products" onClick={handleLinkClick} className={`nav-link ${isActive('/products') ? 'active text-[#0A6E79] font-bold' : ''}`}>
                 Products
               </Link>
             </li>
-            <li className="nav-item">
-              <Link 
-                href="/services" 
-                className={`nav-link ${isActive('/services') ? 'active' : ''}`}
-                style={{ color: isActive('/services') ? '#0A6E79' : undefined, fontWeight: isActive('/services') ? 'bold' : undefined }}
-              >
+            <li>
+              <Link href="/services" onClick={handleLinkClick} className={`nav-link ${isActive('/services') ? 'active text-[#0A6E79] font-bold' : ''}`}>
                 Services
               </Link>
             </li>
-            <li className="nav-item">
-              <Link 
-                href="/contact" 
-                className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
-                style={{ color: isActive('/contact') ? '#0A6E79' : undefined, fontWeight: isActive('/contact') ? 'bold' : undefined }}
-              >
+            <li>
+              <Link href="/contact" onClick={handleLinkClick} className={`nav-link ${isActive('/contact') ? 'active text-[#0A6E79] font-bold' : ''}`}>
                 Contact
               </Link>
             </li>
           </ul>
 
-          <div className="hamburger">
-            <span className="bar"></span>
-            <span className="bar"></span>
-            <span className="bar"></span>
-          </div>
+          {/* زر الهامبرغر للجوال */}
+          <button 
+            type="button"
+            className="hamburger md:hidden p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            <div className={`w-6 h-0.5 bg-slate-800 my-1 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-slate-800 my-1 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-slate-800 my-1 transition-transform duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></div>
+          </button>
 
         </div>
       </nav>
     </header>
-  )
+  );
 }
