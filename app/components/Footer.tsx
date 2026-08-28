@@ -25,11 +25,11 @@ export default function Footer({ companyName, companySubtitle, logo, phone, emai
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               {logo && (
-                <div className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl p-1 border border-slate-700 shadow-md">
+                <div className="h-12 flex items-center justify-center shrink-0 overflow-hidden bg-white rounded-xl px-2 py-1 border border-slate-700 shadow-md">
                   <img 
                     src={logo} 
                     alt={companyName} 
-                    className="w-full h-full object-contain scale-110"
+                    className="max-h-full w-auto object-contain"
                   />
                 </div>
               )}
